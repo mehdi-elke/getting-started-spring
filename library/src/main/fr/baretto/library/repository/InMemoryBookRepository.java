@@ -2,9 +2,12 @@ package fr.baretto.library.repository;
 
 import fr.baretto.library.entity.Book;
 
+import org.springframework.stereotype.Repository;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class InMemoryBookRepository implements BookRepository {
 
     private final List<Book> books = new ArrayList<>();
