@@ -2,6 +2,8 @@
 TP : Première application Spring (sans Spring Boot)
 ==============================
 
+Membre : Jugurtha, Zakariae, Samy, Yassine
+
 Objectif :
 ----------
 Ce TP a pour but de découvrir les bases de Spring Framework sans utiliser Spring Boot.
