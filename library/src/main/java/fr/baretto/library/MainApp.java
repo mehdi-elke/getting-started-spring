@@ -10,7 +10,7 @@ public class MainApp {
         ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
 
         // Récupérer le bean bookService
-        BookService bookService = context.getBean("bookService", BookService.class);
+        BookService bookService = context.getBean( BookService.class);
 
         // Ajouter des livres
         bookService.addBook(new Book("1984", "George Orwell"));

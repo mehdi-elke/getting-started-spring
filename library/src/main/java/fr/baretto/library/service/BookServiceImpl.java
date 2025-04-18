@@ -9,11 +9,9 @@ import java.util.List;
 
 @Service
 public class BookServiceImpl implements BookService {
-
     private BookRepository bookRepository;
 
-    // Injection par setter
-    @Autowired
+   @Autowired
     public void setBookRepository(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
     }
