@@ -10,7 +10,7 @@ public class MainApp {
 
         ApplicationContext context =
                 new ClassPathXmlApplicationContext("applicationContext.xml");
-        BookServiceImpl bookService = context.getBean("bookService", BookServiceImpl.class);
+        BookServiceImpl bookService = context.getBean(BookServiceImpl.class);
 
         Book book1 = new Book("Laura et l'étoile", "Thémis");
         Book book2 = new Book("The fault in our stars", "Zahra");
