@@ -1,3 +1,5 @@
+package com.mstmm.fr.Entity;
+
 public class Book {
     private String title;
     private String author;
