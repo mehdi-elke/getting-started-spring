@@ -1,4 +1,4 @@
-package main;
+package fr.baretto.library.entity;
 
 public class Book {
   private String title;
