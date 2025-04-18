@@ -11,7 +11,7 @@
        https://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
     <!-- Scan controllers SEULEMENT -->
-    <context:component-scan base-package="fr.baretto.library.controller"
+    <context:component-scan base-package="com.mstmm.fr.Controller"
                             use-default-filters="false">
         <context:include-filter type="annotation"
                                 expression="org.springframework.web.bind.annotation.RestController"/>

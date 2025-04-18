@@ -11,7 +11,7 @@
        http://www.springframework.org/schema/tx/spring-tx.xsd">
 
     <!-- Scan services et repositories SEULEMENT -->
-    <context:component-scan base-package="fr.baretto.library">
+    <context:component-scan base-package="com.mstmm.fr">
         <context:exclude-filter type="annotation"
                                 expression="org.springframework.stereotype.Controller"/>
     </context:component-scan>
@@ -27,7 +27,7 @@
     <!-- Hibernate Session Factory -->
     <bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
-        <property name="packagesToScan" value="fr.baretto.library.model"/>
+        <property name="packagesToScan" value="com.mstmm.fr.Entity"/>
         <property name="hibernateProperties">
             <props>
                 <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>

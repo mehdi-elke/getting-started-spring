@@ -22,7 +22,7 @@ services:
       - "8080:8080"
       - "8005:8005"
     volumes:
-      - ./target/library-api.war:/usr/local/tomcat/webapps/library-api.war
+    - ./target/library-api.war:/usr/local/tomcat/webapps/ROOT.war
     depends_on:
       - db
     networks:
