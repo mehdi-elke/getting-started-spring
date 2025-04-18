@@ -1,0 +1,90 @@
+==============================
+TP : Première application Spring (sans Spring Boot)
+==============================
+
+Objectif :
+----------
+Ce TP a pour but de découvrir les bases de Spring Framework sans utiliser Spring Boot. Vous allez créer une petite application de gestion de bibliothèque en ligne de commande, où les dépendances sont injectées via le conteneur Spring défini en XML.
+
+Durée estimée : 2h à 2h30.
+
+Contexte :
+----------
+Une bibliothèque souhaite créer une application pour stocker les livres disponibles. Pour l’instant, les livres seront stockés en mémoire (pas de base de données). Chaque livre aura un titre et un auteur. L'application devra permettre d'ajouter un livre et de lister les livres existants.
+
+Contraintes :
+-------------
+- Utiliser **Spring sans Spring Boot**
+- Toute la configuration doit être faite dans un fichier `applicationContext.xml`
+- Aucun framework de persistance ou de web : application **console**
+- L’injection de dépendances doit être faite par **setter** via XML
+- La détection automatique des composants (`@Component`, `@Service`, `@Repository`) devra être activée dans un second temps via un `<context:component-scan>` dans le fichier XML
+- Écrire un test unitaire de la couche service à l’aide de **JUnit et Mockito**, sans utiliser de contexte Spring
+
+Instructions :
+--------------
+
+Étape 1 : Configuration manuelle des beans
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. **Créer une classe `Book`**
+   - Attributs : `title`, `author`
+   - Ajouter les constructeurs, getters, setters, `toString`
+
+2. **Créer une interface `BookRepository`**
+   - Méthodes : `void save(Book book)` et `List<Book> findAll()`
+
+3. **Implémenter `BookRepository` par une classe `InMemoryBookRepository`**
+   - Stocker les livres dans une `ArrayList`
+
+4. **Créer une interface `BookService`**
+   - Méthodes : `void addBook(Book book)` et `List<Book> listBooks()`
+
+5. **Créer `BookServiceImpl`**
+   - Injecter un `BookRepository` (via setter)
+   - Implémenter les méthodes du service
+
+6. **Créer un fichier `applicationContext.xml`**
+   - Définir les beans `bookRepository` et `bookService`
+   - Injecter les dépendances via les balises `<property>`
+
+7. **Créer une classe `MainApp`**
+   - Charger le contexte Spring
+   - Récupérer le bean `bookService`
+   - Ajouter quelques livres, puis les afficher dans la console
+
+Étape 2 : Migration vers `component-scan`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+8. Ajouter les annotations `@Repository`, `@Service` sur les implémentations de vos interfaces
+
+9. Activer le **scanning automatique des composants** dans `applicationContext.xml` :
+
+```xml
+<context:component-scan base-package="fr.baretto.library" />
+```
+
+10. Supprimer la déclaration manuelle des beans et vérifier que l'application fonctionne toujours
+
+11. Ajouter `@Autowired` sur les setters ou constructeurs
+
+Étape 3 : Ajout d’un test unitaire avec Mockito
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+12. Créer une classe de test `BookServiceImplTest` dans le répertoire `src/test/java`
+
+13. Utiliser **JUnit 5** et **Mockito** pour :
+   - Mock le `BookRepository`
+   - Vérifier que `addBook()` appelle bien la méthode `save()` du repository
+   - Vérifier que `listBooks()` retourne bien la liste de livres fournie par le repository mocké
+
+Fichiers attendus :
+-------------------
+- `Book.java`
+- `BookRepository.java`, `InMemoryBookRepository.java`
+- `BookService.java`, `BookServiceImpl.java`
+- `MainApp.java`
+- `applicationContext.xml`
+- `BookServiceImplTest.java`
+
+Bonne chance ! 🚀

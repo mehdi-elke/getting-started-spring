@@ -1,0 +1,91 @@
+TP : API REST avec Spring (sans Spring Boot) et Hibernate
+
+Objectif
+
+Développer une API REST permettant de gérer des livres avec Spring (sans Spring Boot) et Hibernate. L’application sera packagée en WAR et déployée dans un conteneur Tomcat via Docker.
+L’API exposera les opérations suivantes :
+	•	Créer un livre (POST /api/books)
+	•	Mettre à jour un livre (PUT /api/books/{id})
+	•	Supprimer un livre (DELETE /api/books/{id})
+	•	Lister tous les livres (GET /api/books)
+	•	Récupérer un livre par son identifiant (GET /api/books/{id})
+
+Durée estimée : 3h à 3h30
+Contexte : Application de gestion de bibliothèque avec stockage en base de données PostgreSQL.
+
+Prérequis
+	•	Java 17 ou supérieur
+	•	Maven
+	•	Docker (pour PostgreSQL + pgAdmin)
+	•	Tomcat (le projet génère un .war)
+	•	Un outil pour tester les appels API : Postman ou Bruno
+
+Structure du projet
+
+    Le projet vous est fourni avec une structure Maven complète. La configuration Spring (XML), l’encodage, le mapping et la base sont déjà amorcés.
+
+🧩 Étape 1 : Vérification du setup avec un ping
+
+Ouvrez le projet et examinez les fichiers suivants :
+	•	src/main/webapp/WEB-INF/web.xml : déclaration du DispatcherServlet et encodage UTF-8.
+	•	applicationContext.xml : configuration générale Spring (scans de packages, beans Hibernate, etc.)
+	•	mvc-servlet.xml : configuration spécifique à la couche web (REST).
+
+✅ Créer un contrôleur PingController dans le package controller
+
+@RestController
+public class PingController {
+
+    @GetMapping("/ping")
+    public String ping() {
+        return "OK";
+    }
+}
+
+	1.	Compilez le projet avec Maven : mvn clean install
+	2.	Déployez le fichier .war dans Tomcat (via Docker ou localement) et la base de données: docker-compose up (et docker-compose down -v pour arrêter et supprimer les ressources)
+	3.	Insérez une donnée en db
+	4.	Appelez l’API avec Postman ou Bruno :
+	•	GET library-api/api/ping
+
+
+🛠 Étape 2 : Implémenter le endpoint /books
+
+✅ Côté model
+
+Créez la classe Book.java avec les annotations JPA.
+
+✅ Côté repository
+
+Créez BookRepository et complétez son implémentation avec l'opération findAll.
+
+✅ Côté service
+
+Implémentez BookServiceImpl en déléguant les appels au repository.
+
+✅ Côté controller
+
+Implémentez les endpoints dans BookController, en utilisant les annotations Spring MVC:
+@RestController
+@RequestMapping("/books")
+@GetMapping
+
+
+🧪 Étape 3 : Tester l’API
+	1.	Compilez le projet avec Maven : mvn clean install
+	2.	Déployez le fichier .war dans Tomcat (via Docker ou localement) et la base de données: docker-compose up (et docker-compose down -v pour arrêter et supprimer les ressources)
+	3.	Insérez une donnée en db
+	4.	Appelez l’API avec Postman ou Bruno :
+	•	GET library-api/api/books
+
+🧩 Étape 4 : Implémenter les autres endpoints
+
+Ajoutez les méthodes manquantes dans BookController pour :
+	•	GET /books/{id}
+	•	PUT /books/{id}
+	•	DELETE /books/{id}
+
+🧼 Étape 5 : Nettoyage et Bonus
+	•	✅ Gérez les erreurs (ex: 404 si le livre n’existe pas)
+	•	✅ Ajoutez la validation (ex: @NotBlank sur les champs)
+	•	🚀 Bonus : ajoutez une recherche par auteur (GET /books?author=...)
