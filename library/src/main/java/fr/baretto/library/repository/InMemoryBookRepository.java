@@ -8,6 +8,7 @@ import java.util.List;
 
 @Repository
 public class InMemoryBookRepository implements BookRepository {
+
     private final List<Book> books = new ArrayList<>();
 
     @Override
