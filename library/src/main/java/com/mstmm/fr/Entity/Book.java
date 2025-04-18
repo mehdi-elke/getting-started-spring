@@ -1,6 +1,6 @@
 package com.mstmm.fr.Entity;
 
-public class Book {
+public class Book implements BookInterface{
     private String title;
     private String author;
 

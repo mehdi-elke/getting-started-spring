@@ -6,11 +6,11 @@
            https://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- Repository -->
-    <bean id="bookRepository" class="fr.baretto.library.repository.InMemoryBookRepository"/>
+    <bean id="bookRepository" class="com.mstmm.fr.Repository.BookRepository"/>
 
     <!-- Service -->
-    <bean id="bookService" class="fr.baretto.library.service.BookServiceImpl">
-        <property name="bookRepository" ref="bookRepository"/>
+    <bean id="bookService" class="com.mstmm.fr.Service.BookService">
+        <property ref="bookRepository" name="bookRepository"/>
     </bean>
 
 </beans>
