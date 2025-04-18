@@ -31,17 +31,17 @@ Instructions :
    - Attributs : `title`, `author`
    - Ajouter les constructeurs, getters, setters, `toString`
 
-2. **Créer une interface `BookRepository`**
+2. **Créer une interface `fr.baretto.library.repository.BookRepository`**
    - Méthodes : `void save(Book book)` et `List<Book> findAll()`
 
-3. **Implémenter `BookRepository` par une classe `InMemoryBookRepository`**
+3. **Implémenter `fr.baretto.library.repository.BookRepository` par une classe `InMemoryBookRepository`**
    - Stocker les livres dans une `ArrayList`
 
 4. **Créer une interface `BookService`**
    - Méthodes : `void addBook(Book book)` et `List<Book> listBooks()`
 
 5. **Créer `BookServiceImpl`**
-   - Injecter un `BookRepository` (via setter)
+   - Injecter un `fr.baretto.library.repository.BookRepository` (via setter)
    - Implémenter les méthodes du service
 
 6. **Créer un fichier `applicationContext.xml`**
@@ -74,14 +74,14 @@ Instructions :
 12. Créer une classe de test `BookServiceImplTest` dans le répertoire `src/test/java`
 
 13. Utiliser **JUnit 5** et **Mockito** pour :
-   - Mock le `BookRepository`
+   - Mock le `fr.baretto.library.repository.BookRepository`
    - Vérifier que `addBook()` appelle bien la méthode `save()` du repository
    - Vérifier que `listBooks()` retourne bien la liste de livres fournie par le repository mocké
 
 Fichiers attendus :
 -------------------
 - `Book.java`
-- `BookRepository.java`, `InMemoryBookRepository.java`
+- `fr.baretto.library.repository.BookRepository.java`, `InMemoryBookRepository.java`
 - `BookService.java`, `BookServiceImpl.java`
 - `MainApp.java`
 - `applicationContext.xml`

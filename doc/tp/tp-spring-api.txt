@@ -57,7 +57,7 @@ Créez la classe Book.java avec les annotations JPA.
 
 ✅ Côté repository
 
-Créez BookRepository et complétez son implémentation avec l'opération findAll.
+Créez fr.baretto.library.repository.BookRepository et complétez son implémentation avec l'opération findAll.
 
 ✅ Côté service
 
