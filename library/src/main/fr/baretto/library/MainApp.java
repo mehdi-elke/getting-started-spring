@@ -5,8 +5,6 @@ import fr.baretto.library.service.BookServiceImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.util.List;
-
 public class MainApp {
     public static void main(String[] args) {
 

@@ -1,10 +1,13 @@
 package fr.baretto.library.service;
 
-import fr.baretto.library.entity.Book;
 import fr.baretto.library.repository.BookRepository;
+import fr.baretto.library.entity.Book;
+
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class BookServiceImpl implements BookService {
     private BookRepository bookRepository;
 
