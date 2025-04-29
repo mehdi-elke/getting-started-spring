@@ -22,7 +22,8 @@ public class ProductService {
     public Product getProduct(UUID id) {
         Optional<Product> product = productRepository.findById(id);
         return product.orElse(null);
-        
+    }
+    
     public boolean deleteProduct(UUID productId){
         try {
             productRepository.deleteById(productId);
