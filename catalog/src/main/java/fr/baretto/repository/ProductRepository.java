@@ -1,4 +1,9 @@
 package fr.baretto.repository;
 
-public interface ProductRepository {
+import fr.baretto.data.Product;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.UUID;
+
+public interface ProductRepository extends JpaRepository<Product, UUID> {
 }
