@@ -93,8 +93,10 @@
                 <version>3.2.5</version>
                 <configuration>
                     <useModulePath>false</useModulePath>
+                    <argLine>-XX:+EnableDynamicAgentLoading -XX:+IgnoreUnrecognizedVMOptions --add-opens java.base/java.lang=ALL-UNNAMED -Xshare:off</argLine>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 </project>
