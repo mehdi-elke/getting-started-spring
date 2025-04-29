@@ -3,14 +3,11 @@ package fr.baretto.service;
 import fr.baretto.data.Product;
 import fr.baretto.repository.ProductRepository;
 import org.springframework.stereotype.Service;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import java.util.UUID;
 import java.util.Optional;
 
 @Service
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.UUID;
-
 public class ProductService {
 
     private final ProductRepository productRepository;
