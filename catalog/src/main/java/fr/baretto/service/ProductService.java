@@ -1,6 +1,7 @@
 package fr.baretto.service;
 
 import fr.baretto.data.Product;
+import fr.baretto.data.request.ProductRequestDto;
 import fr.baretto.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,19 @@ public class ProductService {
 
         productRepository.createProduct(product);
 
+    }
+
+    public Product updateProduct(UUID productId, ProductRequestDto productRequestDto){
+        Optional<Product> optProduct = productRepository.findById(productId);
+        if (optProduct.isPresent()) {
+            Product product = optProduct.get();
+            product.setName(productRequestDto.getName());
+            product.setDescription(productRequestDto.getDescription());
+            product.setPrice(productRequestDto.getPrice());
+            return productRepository.save(product);
+        } else {
+            return null;
+        }
     }
 }
 
