@@ -5,13 +5,15 @@ import fr.baretto.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.UUID;
+
 public class ProductService {
 
     private final ProductRepository productRepository;
-
 
     public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
@@ -20,5 +22,14 @@ public class ProductService {
     public Product getProduct(UUID id) {
         Optional<Product> product = productRepository.findById(id);
         return product.orElse(null);
+        
+    public boolean deleteProduct(UUID productId){
+        try {
+            productRepository.deleteById(productId);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+
     }
 }
