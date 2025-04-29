@@ -11,6 +11,11 @@
    <modules>
       <module>library</module>
       <module>library-api</module>
+       <module>catalog</module>
+      <module>inventory</module>
+      <module>payment</module>
+      <module>fulfiller</module>
+      <module>ordermanager</module>
    </modules>
 
 
