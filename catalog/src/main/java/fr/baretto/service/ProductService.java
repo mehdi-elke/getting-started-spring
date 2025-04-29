@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 import java.util.UUID;
 import java.util.Optional;
 
@@ -20,13 +22,18 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public Product createProduct(ProductRequestDto product){
+    public Product createProduct(ProductRequestDto productRequest){
+        Product product = new Product(productRequest.getName(), productRequest.getDescription(), productRequest.getPrice());
         return productRepository.save(product);
     }
 
     public Product getProduct(UUID id) {
         Optional<Product> product = productRepository.findById(id);
         return product.orElse(null);
+    }
+
+    public List<Product> getProducts() {
+        return productRepository.findAll();
     }
 
     public boolean deleteProduct(UUID productId){
