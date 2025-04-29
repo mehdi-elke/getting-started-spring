@@ -4,13 +4,9 @@ import fr.baretto.data.Product;
 import fr.baretto.data.request.ProductRequestDto;
 import fr.baretto.repository.ProductRepository;
 import fr.baretto.service.ProductService;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -23,9 +19,19 @@ public class ProductController {
         this.productService = productService;
     }
 
+    @GetMapping("{productId}")
+    public Product getProduct(@PathVariable UUID productId) {
+        return productService.getProduct(productId);
+    }
+
+    @GetMapping
+    public List<Product> getProducts() {
+        return productService.getProducts();
+    }
+
     @PostMapping
     public Product createProduct(ProductRequestDto productRequestDto){
-        return productService.createProduct(ProductRequestDto);
+        return productService.createProduct(productRequestDto);
     }
 
     @PutMapping("/{productId}")
@@ -37,4 +43,6 @@ public class ProductController {
     public boolean deleteProduct(@PathVariable UUID productId) {
         return productService.deleteProduct(productId);
     }
+
+
 }
