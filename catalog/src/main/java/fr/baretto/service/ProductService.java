@@ -20,6 +20,10 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
+    public Product createProduct(ProductRequestDto product){
+        return productRepository.save(product);
+    }
+
     public Product getProduct(UUID id) {
         Optional<Product> product = productRepository.findById(id);
         return product.orElse(null);
@@ -32,12 +36,6 @@ public class ProductService {
         }catch (Exception e){
             return false;
         }
-    }
-
-    public Product CreateProduct(ProductRequestDto product){
-
-        productRepository.createProduct(product);
-
     }
 
     public Product updateProduct(UUID productId, ProductRequestDto productRequestDto){

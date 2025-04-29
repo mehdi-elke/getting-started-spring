@@ -23,6 +23,11 @@ public class ProductController {
         this.productService = productService;
     }
 
+    @PostMapping
+    public Product createProduct(ProductRequestDto productRequestDto){
+        return productService.createProduct(ProductRequestDto);
+    }
+
     @PutMapping("/{productId}")
     public Product updateProduct(@PathVariable UUID productId, @RequestBody ProductRequestDto productRequestDto) {
         return productService.updateProduct(productId, productRequestDto);
