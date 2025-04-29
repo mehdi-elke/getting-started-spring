@@ -31,6 +31,13 @@ public class ProductService {
         }catch (Exception e){
             return false;
         }
+    }
+
+    public Product CreateProduct(ProductRequestDto product){
+
+        productRepository.createProduct(product);
 
     }
 }
+
+
