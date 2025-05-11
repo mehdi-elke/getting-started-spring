@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: inventory
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/inventory
+    username: root
+    password: root
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8081
+  error:
+    include-message: always
+    include-stacktrace: never
+    
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-stacktrace: always
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
