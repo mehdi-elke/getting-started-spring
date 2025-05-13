@@ -1,10 +1,8 @@
-package fr.baretto.service;
+package fr.baretto.getting_started_spring.service;
 
-import fr.baretto.data.Product;
-import fr.baretto.data.request.ProductRequestDto;
-import fr.baretto.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import java.util.UUID;
+import fr.baretto.getting_started_spring.data.Product;
+import fr.baretto.getting_started_spring.data.request.ProductRequestDto;
+import fr.baretto.getting_started_spring.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
