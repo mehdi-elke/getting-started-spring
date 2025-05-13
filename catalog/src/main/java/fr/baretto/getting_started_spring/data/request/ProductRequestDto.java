@@ -1,11 +1,18 @@
 package fr.baretto.getting_started_spring.data.request;
 
-import jakarta.persistence.Column;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.validation.annotation.Validated;
+
 
 public class ProductRequestDto {
 
+    @NotNull
     private String name;
     private String description;
+
+    @NotNull
+    @Min(0)
     private Double price;
 
     public ProductRequestDto(String name, String description, Double price) {

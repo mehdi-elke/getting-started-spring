@@ -4,6 +4,7 @@ package fr.baretto.getting_started_spring.controller;
 import fr.baretto.getting_started_spring.data.Product;
 import fr.baretto.getting_started_spring.data.request.ProductRequestDto;
 import fr.baretto.getting_started_spring.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public class ProductController {
     }
 
     @PostMapping
-    public Product createProduct(@RequestBody ProductRequestDto productRequestDto){
+    public Product createProduct(@RequestBody @Valid ProductRequestDto productRequestDto){
         return productService.createProduct(productRequestDto);
     }
 
