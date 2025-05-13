@@ -19,4 +19,7 @@ public class AreaProduct {
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     private Product productId;
+
+    @Column(name = "quantity", nullable = false)
+    private long quantity;
 }
