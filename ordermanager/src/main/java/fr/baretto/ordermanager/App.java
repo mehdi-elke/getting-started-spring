@@ -1,4 +1,3 @@
-// File: ordermanager/src/main/java/fr/baretto/ordermanager/App.java
 package fr.baretto.ordermanager;
 
 import fr.baretto.ordermanager.dto.OrderRequest;

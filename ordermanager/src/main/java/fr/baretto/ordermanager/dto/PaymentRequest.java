@@ -6,7 +6,6 @@ public class PaymentRequest {
     private Double amount;
     private String paymentMethod;
 
-    // Getters et Setters
     public String getOrderId() { return orderId; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
 
