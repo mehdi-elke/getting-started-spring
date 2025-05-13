@@ -1,36 +1,71 @@
 package fr.baretto.ordermanager;
 
+import fr.baretto.ordermanager.OrderRequest;
+import fr.baretto.ordermanager.OrderResponse;
+import fr.baretto.ordermanager.PaymentRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
 
-    //POST /orders/validate
-    // - Entrée : Créer une commande (produits + adresse de livraison)
-    // - Sortie : Commande en CREATED si stock OK
+    @Autowired
+    private OrderService orderService;
 
     @PostMapping("/validate")
-    public ResponseEntity<?> createOrder() {
-        // Appel Inventory Service pour check
-        // Si OK : enregistrer la commande en base avec status CREATED
-        return null;
+    public ResponseEntity<OrderResponse> validateOrder(@RequestBody OrderRequest request) {
+        Order order = orderService.validateOrder(request);
+
+        if (order == null) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new OrderResponse("Stock insuffisant ou livraison indisponible"));
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new OrderResponse(order.getOrderId(), order.getStatus(), order.getCreationDate()));
     }
 
-    //POST /orders/pay
-    // - Entrée : Informations paiement
-    // - Sortie : Commande VALIDATED ou refusée
-
     @PostMapping("/pay")
-    public ResponseEntity<?> payOrder() {
-        // Appel Payment Service
-        // Si OK : mettre status VALIDATED
-        // Réserver le stock
-        // Appeler Fulfillment Service
-        return null;
+    public ResponseEntity<OrderResponse> payOrder(@RequestBody PaymentRequest request) {
+        Order order = orderService.payOrder(request);
+
+        if (order == null) {
+            Optional<Order> existingOrder = orderService.getOrderById(request.getOrderId());
+
+            if (existingOrder.isEmpty()) {
+                return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body(new OrderResponse("Commande non trouvée"));
+            } else {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(new OrderResponse("Paiement refusé ou commande dans un état invalide"));
+            }
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new OrderResponse(order.getOrderId(), order.getStatus(), order.getCreationDate()));
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<OrderResponse> getOrder(@PathVariable String orderId) {
+        Optional<Order> optionalOrder = orderService.getOrderById(orderId);
+
+        if (optionalOrder.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new OrderResponse("Commande non trouvée"));
+        }
+
+        Order order = optionalOrder.get();
+        return ResponseEntity.ok(new OrderResponse(order.getOrderId(), order.getStatus(), order.getCreationDate()));
     }
 }

@@ -1,11 +1,25 @@
 package fr.baretto.ordermanager;
 
-public class App
-{
-    public static void main( String[] args )
-    {
-        System.out.println( "Lena Zie" );
-        OrderService orderService = new OrderService();
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class App implements CommandLineRunner {
+
+    private final OrderService orderService;
+
+    public App(OrderService orderService) {
+        this.orderService = orderService;
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(App.class, args);
+    }
+
+    @Override
+    public void run(String... args) {
+        System.out.println("Application démarrée avec succès");
         orderService.createOrder("alice.dupont@example.com", "0612345678", "12 rue Lafayette, Paris", "Carte bancaire", "Livraison standard", "1x Laptop Dell XPS 13");
         orderService.createOrder("jean.martin@example.com", "0623456789", "34 avenue Victor Hugo, Lyon", "PayPal", "Livraison express", "2x iPhone 14 Pro");
         orderService.createOrder("sophie.leroy@example.com", "0634567890", "78 boulevard Haussmann, Paris", "Carte bancaire", "Click & Collect", "1x TV LG OLED");

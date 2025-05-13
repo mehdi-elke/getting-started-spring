@@ -1,25 +1,36 @@
 package fr.baretto.ordermanager;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import jakarta.persistence.*;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
+@Table(name = "orders")
 public class Order {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, unique = true)
     private UUID uuid;
+
+    @Column(nullable = false, unique = true)
     private String orderId;
 
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
+
+    @Temporal(TemporalType.TIMESTAMP)
     private Date creationDate;
 
+    @Embedded
     private Contact contact;
+
     private String address;
     private String paymentMethod;
     private String deliveryMethod;
+    private String deliveryZone;
     private String orderDetails;
     private String orderTracking;
 
@@ -85,6 +96,10 @@ public class Order {
         return deliveryMethod;
     }
 
+    public String getDeliveryZone() {
+        return deliveryZone;
+    }
+
     public void setDeliveryMethod(String deliveryMethod) {
         this.deliveryMethod = deliveryMethod;
     }
@@ -111,5 +126,9 @@ public class Order {
 
     public Long getId() {
         return id;
+    }
+
+    public void setDeliveryZone(String deliveryZone) {
+        this.deliveryZone = deliveryZone;
     }
 }
