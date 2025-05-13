@@ -1,4 +1,4 @@
-package fr.baretto.ordermanager;
+package fr.baretto.ordermanager.exception;
 
 public class OrderException extends RuntimeException {
     public OrderException(String message) {

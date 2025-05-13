@@ -1,4 +1,4 @@
-package fr.baretto.ordermanager;
+package fr.baretto.ordermanager.model;
 
 import jakarta.persistence.*;
 import java.util.Date;

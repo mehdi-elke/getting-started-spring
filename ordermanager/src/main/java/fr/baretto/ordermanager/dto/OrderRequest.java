@@ -1,7 +1,6 @@
-package fr.baretto.ordermanager;
+package fr.baretto.ordermanager.dto;
 
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 public class OrderRequest {

@@ -1,6 +1,9 @@
 // File: ordermanager/src/main/java/fr/baretto/ordermanager/App.java
 package fr.baretto.ordermanager;
 
+import fr.baretto.ordermanager.dto.OrderRequest;
+import fr.baretto.ordermanager.dto.OrderResponse;
+import fr.baretto.ordermanager.service.OrderService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

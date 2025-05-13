@@ -1,5 +1,11 @@
-package fr.baretto.ordermanager;
+package fr.baretto.ordermanager.controller;
 
+import fr.baretto.ordermanager.dto.OrderRequest;
+import fr.baretto.ordermanager.dto.OrderResponse;
+import fr.baretto.ordermanager.dto.PaymentRequest;
+import fr.baretto.ordermanager.exception.OrderException;
+import fr.baretto.ordermanager.model.Order;
+import fr.baretto.ordermanager.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

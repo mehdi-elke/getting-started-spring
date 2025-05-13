@@ -1,5 +1,6 @@
-package fr.baretto.ordermanager;
+package fr.baretto.ordermanager.repository;
 
+import fr.baretto.ordermanager.model.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

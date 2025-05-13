@@ -1,6 +1,6 @@
-package fr.baretto.ordermanager;
+package fr.baretto.ordermanager.dto;
 
-import fr.baretto.ordermanager.OrderStatus;
+import fr.baretto.ordermanager.model.OrderStatus;
 import java.util.Date;
 
 public class OrderResponse {

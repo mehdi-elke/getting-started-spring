@@ -1,7 +1,12 @@
-package fr.baretto.ordermanager;
+package fr.baretto.ordermanager.service;
 
-import fr.baretto.ordermanager.OrderRequest;
-import fr.baretto.ordermanager.PaymentRequest;
+import fr.baretto.ordermanager.dto.OrderRequest;
+import fr.baretto.ordermanager.dto.OrderResponse;
+import fr.baretto.ordermanager.dto.PaymentRequest;
+import fr.baretto.ordermanager.model.Contact;
+import fr.baretto.ordermanager.model.Order;
+import fr.baretto.ordermanager.model.OrderStatus;
+import fr.baretto.ordermanager.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
