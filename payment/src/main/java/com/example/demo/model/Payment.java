@@ -1,25 +1,58 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.antlr.v4.runtime.misc.NotNull;
+import org.checkerframework.checker.index.qual.Positive;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@Builder
 public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
 
-    private String orderId;
-    private double amount;
+    @NotNull
+    private UUID orderId;
 
-    @Enumerated(EnumType.STRING) // Stocke l'enum sous forme de chaîne dans la base de données
+    @NotNull
+    @Positive
+    private BigDecimal amount;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
-    @Enumerated(EnumType.STRING) // Stocke l'enum sous forme de chaîne dans la base de données
+    @NotNull
+    @Enumerated(EnumType.STRING)
     private PaymentStatus status;
+
+    private String transactionReference;
+
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    private LocalDateTime processedAt;
+
+    // Constructeur personnalisé pour initialiser les valeurs par défaut
+    public static class PaymentBuilder {
+        private PaymentStatus status = PaymentStatus.PENDING;
+    }
 }

@@ -4,7 +4,14 @@ import com.example.demo.model.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
-public interface PaymentRepository extends JpaRepository<Payment, Long> {
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
+@Repository
+public interface PaymentRepository extends JpaRepository<Payment, UUID> {
+
+    List<Payment> findByOrderId(UUID orderId);
+
+    Optional<Payment> findTopByOrderIdOrderByCreatedAtDesc(UUID orderId);
 }
