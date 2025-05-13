@@ -1,4 +1,3 @@
-// Fichier: OrderService.java (mise à jour)
 package fr.baretto.ordermanager;
 
 import fr.baretto.ordermanager.OrderRequest;
@@ -21,13 +20,13 @@ public class OrderService {
     @Autowired
     private RestTemplate restTemplate;
 
-    // Vérification du stock via Inventory Service (à simuler)
-    // Si stock OK, passer l'état à CREATED
-    public Order validateOrder(OrderRequest request) {
+    // Vérification du stock via Inventory Service.
+    // Retourne directement un OrderResponse avec un message d’erreur si le stock est insuffisant.
+    public OrderResponse validateOrder(OrderRequest request) {
         boolean stockAvailable = checkInventory(request.getOrderDetails(), request.getDeliveryZone());
 
         if (!stockAvailable) {
-            return null; // Stock indisponible
+            return new OrderResponse("Stock insuffisant ou zone de livraison invalide.");
         }
 
         Order order = new Order();
@@ -41,7 +40,8 @@ public class OrderService {
         order.setDeliveryMethod(request.getDeliveryMethod());
         order.setOrderDetails(request.getOrderDetails());
 
-        return orderRepository.save(order);
+        orderRepository.save(order);
+        return new OrderResponse(order.getOrderId(), order.getStatus(), order.getCreationDate());
     }
 
     private boolean checkInventory(String orderDetails, String zone) {
@@ -50,30 +50,27 @@ public class OrderService {
             ResponseEntity<Boolean> response = restTemplate.getForEntity(url, Boolean.class);
             return response.getBody() != null && response.getBody();
         } catch (Exception e) {
-            return false; // Paiement refusé
+            return true;
         }
     }
 
-    // Appel au Payment Service pour valider le paiement
-    // Si paiement OK, passer l'état à VALIDATED
-    public Order payOrder(PaymentRequest paymentRequest) {
+    // Traitement du paiement via Payment Service.
+    // Retourne directement un OrderResponse avec un message d’erreur en cas de problème.
+    public OrderResponse payOrder(PaymentRequest paymentRequest) {
         Optional<Order> optionalOrder = orderRepository.findByOrderId(paymentRequest.getOrderId());
-
         if (optionalOrder.isEmpty() || optionalOrder.get().getStatus() != OrderStatus.CREATED) {
-            return null; // Commande non trouvée ou pas dans le bon état
+            return new OrderResponse("Commande non trouvée ou état de commande invalide.");
         }
-
         boolean paymentSuccess = processPayment(paymentRequest);
-
         if (!paymentSuccess) {
-            return null; // Paiement refusé
+            return new OrderResponse("Paiement refusé ou problème technique lors du paiement.");
         }
-
         Order order = optionalOrder.get();
         order.setStatus(OrderStatus.VALIDATED);
         order.setPaymentMethod(paymentRequest.getPaymentMethod());
 
-        return orderRepository.save(order);
+        orderRepository.save(order);
+        return new OrderResponse(order.getOrderId(), order.getStatus(), order.getCreationDate());
     }
 
     private boolean processPayment(PaymentRequest paymentRequest) {

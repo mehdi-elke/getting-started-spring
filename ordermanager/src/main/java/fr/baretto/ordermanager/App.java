@@ -1,3 +1,4 @@
+// File: ordermanager/src/main/java/fr/baretto/ordermanager/App.java
 package fr.baretto.ordermanager;
 
 import org.springframework.boot.CommandLineRunner;
@@ -21,23 +22,21 @@ public class App implements CommandLineRunner {
     public void run(String... args) {
         System.out.println("Application démarrée avec succès");
 
-        // Instanciation directe avec new
         OrderRequest orderRequest = new OrderRequest();
         orderRequest.setEmail("alice.dupont@example.com");
         orderRequest.setPhoneNumber("0612345678");
         orderRequest.setAddress("12 rue Lafayette, Paris");
         orderRequest.setDeliveryMethod("Chronopost");
-        orderRequest.setDeliveryZone("Livraison standard");
-        orderRequest.setOrderDetails("1x Laptop Dell XPS 13");
+        orderRequest.setDeliveryZone("Zone 1");
+        orderRequest.setOrderDetails("1x Laptop Dell XPS 13");
         orderRequest.setOrderTracking("CHR094396875849");
         orderRequest.setPaymentMethod("Carte bancaire");
-        orderRequest.setDeliveryZone("Zone 1");
 
-        Order order = orderService.validateOrder(orderRequest);
-        if (order != null) {
-            System.out.println("Commande créée avec succès : " + order.getOrderId());
+        OrderResponse response = orderService.validateOrder(orderRequest);
+        if (response.getOrderId() != null) {
+            System.out.println("Commande créée avec succès : " + response.getOrderId());
         } else {
-            System.out.println("Erreur lors de la création de la commande.");
+            System.out.println("Erreur lors de la création de la commande : " + response.getMessage());
         }
     }
 }
