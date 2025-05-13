@@ -44,6 +44,8 @@ public class OrderService {
         order.setDeliveryZone(request.getDeliveryZone());
         order.setDeliveryMethod(request.getDeliveryMethod());
         order.setOrderDetails(request.getOrderDetails());
+        order.setPaymentMethod(request.getPaymentMethod());
+        order.setOrderTracking(request.getOrderTracking());
 
         orderRepository.save(order);
         return new OrderResponse(order.getOrderId(), order.getStatus(), order.getCreationDate());
