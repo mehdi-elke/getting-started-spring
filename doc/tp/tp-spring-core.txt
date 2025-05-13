@@ -2,15 +2,22 @@
 TP : Première application Spring (sans Spring Boot)
 ==============================
 
+Membre : Jugurtha, Zakariae, Samy, Yassine
+
 Objectif :
 ----------
-Ce TP a pour but de découvrir les bases de Spring Framework sans utiliser Spring Boot. Vous allez créer une petite application de gestion de bibliothèque en ligne de commande, où les dépendances sont injectées via le conteneur Spring défini en XML.
+Ce TP a pour but de découvrir les bases de Spring Framework sans utiliser Spring Boot.
+Vous allez créer une petite application de gestion de bibliothèque en ligne de commande,
+où les dépendances sont injectées via le conteneur Spring défini en XML.
 
 Durée estimée : 2h à 2h30.
 
 Contexte :
 ----------
-Une bibliothèque souhaite créer une application pour stocker les livres disponibles. Pour l’instant, les livres seront stockés en mémoire (pas de base de données). Chaque livre aura un titre et un auteur. L'application devra permettre d'ajouter un livre et de lister les livres existants.
+Une bibliothèque souhaite créer une application pour stocker les livres disponibles.
+Pour l’instant, les livres seront stockés en mémoire (pas de base de données).
+Chaque livre aura un titre et un auteur. L'application devra permettre d'ajouter un livre
+et de lister les livres existants.
 
 Contraintes :
 -------------
@@ -18,8 +25,10 @@ Contraintes :
 - Toute la configuration doit être faite dans un fichier `applicationContext.xml`
 - Aucun framework de persistance ou de web : application **console**
 - L’injection de dépendances doit être faite par **setter** via XML
-- La détection automatique des composants (`@Component`, `@Service`, `@Repository`) devra être activée dans un second temps via un `<context:component-scan>` dans le fichier XML
-- Écrire un test unitaire de la couche service à l’aide de **JUnit et Mockito**, sans utiliser de contexte Spring
+- La détection automatique des composants (`@Component`, `@Service`, `@Repository`) devra
+être activée dans un second temps via un `<context:component-scan>` dans le fichier XML
+- Écrire un test unitaire de la couche service à l’aide de **JUnit et Mockito**,
+sans utiliser de contexte Spring
 
 Instructions :
 --------------
