@@ -1,0 +1,7 @@
+# Test files
+src/test/java/fr/baretto/Entity/*Test.java
+src/test/java/fr/baretto/Service/*Test.java
+src/test/resources/mockito-extensions/
+
+# Maven wrapper
+.mvn/wrapper/mvnw.cmd 
