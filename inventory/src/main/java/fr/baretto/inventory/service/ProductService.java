@@ -2,6 +2,7 @@ package fr.baretto.inventory.service;
 
 import fr.baretto.inventory.dao.model.Product;
 import fr.baretto.inventory.dao.repository.ProductRepository;
+import fr.baretto.inventory.utils.dto.ProductDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +22,12 @@ public class ProductService {
         return productRepository.findById(id);
     }
 
-    public Product addProduct(Product product) {
-        return productRepository.save(product);
+    public Product addProduct(ProductDto product) {
+        Product productEntity = new Product();
+        productEntity.setId(product.getId());
+        productEntity.setName(product.getName());
+
+        return productRepository.save(productEntity);
     }
 
     public void deleteProduct(Long id) {
