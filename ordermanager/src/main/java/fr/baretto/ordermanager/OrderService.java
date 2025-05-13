@@ -27,7 +27,7 @@ public class OrderService {
         order.setPaymentMethod(paymentMethod);
         order.setDeliveryMethod(deliveryMethod);
         order.setOrderDetails(orderDetails);
-        return order;
+        return orderRepository.save(order);
     }
 
     // Vérification du stock via Inventory Service (à simuler)
