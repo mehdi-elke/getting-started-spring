@@ -4,7 +4,9 @@ package fr.baretto.ordermanager;
 import fr.baretto.ordermanager.OrderRequest;
 import fr.baretto.ordermanager.PaymentRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Date;
 import java.util.Optional;
@@ -16,24 +18,12 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
-    public Order createOrder(String email, String phoneNumber, String address, String paymentMethod, String deliveryMethod, String orderDetails) {
-        Order order = new Order();
-        order.setUuid(UUID.randomUUID());
-        order.setOrderId("CMD-" + order.getUuid());
-        order.setStatus(OrderStatus.CREATED);
-        order.setCreationDate(new Date());
-        order.setContact(new Contact(email, phoneNumber));
-        order.setAddress(address);
-        order.setPaymentMethod(paymentMethod);
-        order.setDeliveryMethod(deliveryMethod);
-        order.setOrderDetails(orderDetails);
-        return orderRepository.save(order);
-    }
+    @Autowired
+    private RestTemplate restTemplate;
 
     // Vérification du stock via Inventory Service (à simuler)
     // Si stock OK, passer l'état à CREATED
     public Order validateOrder(OrderRequest request) {
-        // Simuler une vérification de stock
         boolean stockAvailable = checkInventory(request.getOrderDetails(), request.getDeliveryZone());
 
         if (!stockAvailable) {
@@ -54,10 +44,14 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    // Méthode simulée pour vérifier le stock
     private boolean checkInventory(String orderDetails, String zone) {
-        // Simulation: 80% de chance que le stock soit disponible
-        return Math.random() > 0.2;
+        String url = "http://localhost:8081/inventory/check?zone=" + zone + "&orderDetails=" + orderDetails;
+        try {
+            ResponseEntity<Boolean> response = restTemplate.getForEntity(url, Boolean.class);
+            return response.getBody() != null && response.getBody();
+        } catch (Exception e) {
+            return false; // Paiement refusé
+        }
     }
 
     // Appel au Payment Service pour valider le paiement
@@ -69,7 +63,6 @@ public class OrderService {
             return null; // Commande non trouvée ou pas dans le bon état
         }
 
-        // Simuler une validation de paiement
         boolean paymentSuccess = processPayment(paymentRequest);
 
         if (!paymentSuccess) {
@@ -83,13 +76,16 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    // Méthode simulée pour traiter le paiement
     private boolean processPayment(PaymentRequest paymentRequest) {
-        // Simulation: 90% de chance que le paiement soit accepté
-        return Math.random() > 0.1;
+        String url = "http://localhost:8081/payment/process";
+        try {
+            ResponseEntity<Boolean> response = restTemplate.postForEntity(url, paymentRequest, Boolean.class);
+            return response.getBody() != null && response.getBody();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    // Méthode utilitaire pour récupérer une commande par son ID
     public Optional<Order> getOrderById(String orderId) {
         return orderRepository.findByOrderId(orderId);
     }

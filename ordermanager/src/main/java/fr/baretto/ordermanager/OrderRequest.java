@@ -1,16 +1,21 @@
 package fr.baretto.ordermanager;
 
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public class OrderRequest {
 
+    private UUID orderId;
+    private String address;
     private String email;
     private String phoneNumber;
-    private String address;
-
-    private String deliveryZone;
+    private Date creationDate;
     private String deliveryMethod;
+    private String deliveryZone;
     private String orderDetails;
+    private String orderTracking;
+    private String paymentMethod;
 
     // Getters et Setters
     public String getEmail() { return email; }
@@ -30,4 +35,31 @@ public class OrderRequest {
 
     public String getOrderDetails() { return orderDetails; }
     public void setOrderDetails(String orderDetails) { this.orderDetails = orderDetails; }
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+
+    public UUID getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(UUID orderId) {
+        this.orderId = orderId;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public String getOrderTracking() {
+        return orderTracking;
+    }
+
+    public void setOrderTracking(String orderTracking) {
+        this.orderTracking = orderTracking;
+    }
 }
