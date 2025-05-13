@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:ordermanagerdb  # base en mémoire
+    driver-class-name: org.h2.Driver
+    username: admin
+    password: Admin123!
+  h2:
+    console:
+      enabled: true         # Pour accéder à la console web
+      path: /h2-console     # URL : http://localhost:8080/h2-console
+  jpa:
+    hibernate:
+      ddl-auto: update      # Crée ou met à jour les tables
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
