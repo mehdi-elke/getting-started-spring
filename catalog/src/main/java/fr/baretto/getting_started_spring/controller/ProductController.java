@@ -1,9 +1,9 @@
-package fr.baretto.controller;
+package fr.baretto.getting_started_spring.controller;
 
-import fr.baretto.data.Product;
-import fr.baretto.data.request.ProductRequestDto;
-import fr.baretto.repository.ProductRepository;
-import fr.baretto.service.ProductService;
+
+import fr.baretto.getting_started_spring.data.Product;
+import fr.baretto.getting_started_spring.data.request.ProductRequestDto;
+import fr.baretto.getting_started_spring.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
