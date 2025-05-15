@@ -15,6 +15,7 @@ public interface PaymentService {
      * @param paymentRequest les détails du paiement
      * @return la réponse du paiement
      */
+
     PaymentResponse processPayment(PaymentRequest paymentRequest);
 
     /**
