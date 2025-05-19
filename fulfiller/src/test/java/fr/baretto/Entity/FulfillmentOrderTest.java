@@ -24,7 +24,6 @@ class FulfillmentOrderTest {
         orderReference = "TEST-ORDER-REF";
         order = new FulfillmentOrder();
         order.setId(orderId);
-        order.setOrderReference(orderReference);
         
         items = new ArrayList<>();
         OrderItem item = new OrderItem();
@@ -39,30 +38,30 @@ class FulfillmentOrderTest {
         FulfillmentOrder newOrder = new FulfillmentOrder();
         
         assertNotNull(newOrder.getCreatedAt());
-        assertEquals(FulfillmentStatus.IN_PREPARATION, newOrder.getStatus());
-        assertNotNull(newOrder.getItems());
-        assertTrue(newOrder.getItems().isEmpty());
+        assertEquals(FulfillmentStatus.CREATED, newOrder.getStatus());
+        assertNotNull(newOrder.getOrderLines());
+        assertTrue(newOrder.getOrderLines().isEmpty());
     }
 
     @Test
     void setStatus_ShouldUpdateStatusAndUpdatedAt() {
         LocalDateTime beforeUpdate = LocalDateTime.now();
-        order.setStatus(FulfillmentStatus.ACCEPTED);
+        order.setStatus(FulfillmentStatus.VALIDATED);
         LocalDateTime afterUpdate = LocalDateTime.now();
 
-        assertEquals(FulfillmentStatus.ACCEPTED, order.getStatus());
+        assertEquals(FulfillmentStatus.VALIDATED, order.getStatus());
         assertNotNull(order.getUpdatedAt());
         assertTrue(order.getUpdatedAt().isAfter(beforeUpdate) || order.getUpdatedAt().equals(beforeUpdate));
         assertTrue(order.getUpdatedAt().isBefore(afterUpdate) || order.getUpdatedAt().equals(afterUpdate));
     }
 
     @Test
-    void setItems_ShouldUpdateItemsList() {
-        order.setItems(items);
+    void setOrderLines_ShouldUpdateOrderLinesList() {
+        order.setOrderLines(items);
 
-        assertEquals(items, order.getItems());
-        assertEquals(1, order.getItems().size());
-        assertEquals("TEST-PRODUCT", order.getItems().get(0).getProductId());
+        assertEquals(items, order.getOrderLines());
+        assertEquals(1, order.getOrderLines().size());
+        assertEquals("TEST-PRODUCT", order.getOrderLines().get(0).getProductId());
     }
 
     @Test
@@ -72,12 +71,6 @@ class FulfillmentOrderTest {
         UUID newId = UUID.randomUUID();
         order.setId(newId);
         assertEquals(newId, order.getId());
-
-        // Test OrderReference
-        assertEquals(orderReference, order.getOrderReference());
-        String newReference = "NEW-REF";
-        order.setOrderReference(newReference);
-        assertEquals(newReference, order.getOrderReference());
 
         // Test CreatedAt
         LocalDateTime createdAt = LocalDateTime.now();
@@ -93,39 +86,34 @@ class FulfillmentOrderTest {
     @Test
     void addItem_ShouldAddItemToOrder() {
         OrderItem newItem = new OrderItem("NEW-PRODUCT", 2);
-        order.getItems().add(newItem);
+        order.getOrderLines().add(newItem);
 
-        assertEquals(1, order.getItems().size());
-        assertEquals("NEW-PRODUCT", order.getItems().get(0).getProductId());
-        assertEquals(2, order.getItems().get(0).getQuantity());
+        assertEquals(1, order.getOrderLines().size());
+        assertEquals("NEW-PRODUCT", order.getOrderLines().get(0).getProductId());
+        assertEquals(2, order.getOrderLines().get(0).getQuantity());
     }
 
     @Test
     void removeItem_ShouldRemoveItemFromOrder() {
-        order.setItems(items);
-        assertEquals(1, order.getItems().size());
+        order.setOrderLines(items);
+        assertEquals(1, order.getOrderLines().size());
         
-        order.getItems().remove(0);
-        assertTrue(order.getItems().isEmpty());
+        order.getOrderLines().remove(0);
+        assertTrue(order.getOrderLines().isEmpty());
     }
 
     @Test
     void statusTransitions_ShouldWorkCorrectly() {
-        // Test transition from IN_PREPARATION to ACCEPTED
-        order.setStatus(FulfillmentStatus.IN_PREPARATION);
-        order.setStatus(FulfillmentStatus.ACCEPTED);
-        assertEquals(FulfillmentStatus.ACCEPTED, order.getStatus());
+        // Test transition from IN_PREPARATION to VALIDATED
+        order.setStatus(FulfillmentStatus.VALIDATED);
+        assertEquals(FulfillmentStatus.VALIDATED, order.getStatus());
 
-        // Test transition from ACCEPTED to IN_DELIVERY
+        // Test transition from VALIDATED to IN_DELIVERY
         order.setStatus(FulfillmentStatus.IN_DELIVERY);
         assertEquals(FulfillmentStatus.IN_DELIVERY, order.getStatus());
 
-        // Test transition from IN_DELIVERY to IN_DELIVERY
-        order.setStatus(FulfillmentStatus.IN_DELIVERY);
-        assertEquals(FulfillmentStatus.IN_DELIVERY, order.getStatus());
-
-        // Test transition from IN_DELIVERY to DELIVERED
-        order.setStatus(FulfillmentStatus.DELIVERED);
-        assertEquals(FulfillmentStatus.DELIVERED, order.getStatus());
+        // Test transition from IN_DELIVERY to FULFILLED
+        order.setStatus(FulfillmentStatus.FULFILLED);
+        assertEquals(FulfillmentStatus.FULFILLED, order.getStatus());
     }
 } 

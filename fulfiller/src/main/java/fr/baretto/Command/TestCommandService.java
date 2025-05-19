@@ -6,6 +6,8 @@ import fr.baretto.Entity.OrderItem;
 import fr.baretto.Entity.Shipment;
 import fr.baretto.Entity.ShipmentIndicator;
 import fr.baretto.Entity.Warehouse;
+import fr.baretto.Entity.DeliveryAddress;
+import fr.baretto.Entity.Contact;
 import fr.baretto.Enumeration.FulfillmentStatus;
 import fr.baretto.Enumeration.ShipmentEventType;
 import fr.baretto.Repository.CarrierRepository;
@@ -73,9 +75,26 @@ public class TestCommandService {
         verify(warehouseRepository.count() > 0, "Aucun entrepôt trouvé dans la base de données");
         verify(carrierRepository.count() > 0, "Aucun transporteur trouvé dans la base de données");
 
-        FulfillmentOrder order = fulfillmentOrderService.createOrder("TEST-ORDER-001");
-        verify(order != null, "La commande n'a pas été créée");
-        verify(order.getStatus() == FulfillmentStatus.CREATED, "Le statut initial n'est pas CREATED");
+        FulfillmentOrder order = new FulfillmentOrder();
+        order.setCustomerId(UUID.randomUUID());
+        
+        // Adresse de livraison factice
+        DeliveryAddress address = new DeliveryAddress();
+        address.setZone("Zone A");
+        address.setStreet("1 rue de la Paix");
+        address.setCity("Paris");
+        address.setPostalCode("75000");
+        address.setCountry("France");
+        order.setDeliveryAddress(address);
+        
+        // Contact factice
+        Contact contact = new Contact();
+        contact.setEmail("test@novamart.fr");
+        contact.setPhoneNumber("0102030405");
+        order.setContact(contact);
+        
+        order.setStatus(FulfillmentStatus.CREATED);
+        order = fulfillmentOrderRepository.save(order);
 
         OrderItem item = fulfillmentOrderService.addItem(
             order.getId(),
@@ -87,7 +106,7 @@ public class TestCommandService {
         verify(orderItemRepository.findByFulfillmentOrderId(order.getId()).size() == 1, "L'item n'a pas été sauvegardé");
 
         order = fulfillmentOrderService.acceptOrder(order.getId());
-        verify(order.getStatus() == FulfillmentStatus.ACCEPTED, "Le statut n'est pas ACCEPTED");
+        verify(order.getStatus() == FulfillmentStatus.VALIDATED, "Le statut n'est pas VALIDATED");
 
         order = fulfillmentOrderService.markPrepared(order.getId());
         verify(order.getStatus() == FulfillmentStatus.IN_PREPARATION, "Le statut n'est pas IN_PREPARATION");
@@ -100,11 +119,11 @@ public class TestCommandService {
             carrier.getId()
         );
         verify(shipment != null, "L'expédition n'a pas été créée");
-        verify(shipment.getStatus() == FulfillmentStatus.ACCEPTED, "Le statut initial de l'expédition n'est pas ACCEPTED");
+        verify(shipment.getStatus() == FulfillmentStatus.VALIDATED, "Le statut initial de l'expédition n'est pas VALIDATED");
 
         shipment = carrierService.pushTracking(
             shipment.getId(),
-            ShipmentEventType.SHIPMENT_IN_TRANSIT,
+            ShipmentEventType.IN_TRANSIT,
             "En cours de livraison"
         );
         verify(shipment.getStatus() == FulfillmentStatus.IN_DELIVERY, "Le statut n'est pas IN_DELIVERY");

@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/fulfillment/shipments")
+@RequestMapping("/shipment")
 @Tag(name = "Shipment", description = "Gestion des expéditions et du suivi des colis")
 public class ShipmentController {
 
@@ -29,16 +29,33 @@ public class ShipmentController {
         this.shipmentService = shipmentService;
     }
 
-    @PostMapping("/{id}/events")
+    @PostMapping("/start")
     @Operation(
-        summary = "Ajouter un événement de suivi à un Shipment",
-        description = "Ajoute un événement (type et description) à un Shipment existant, par son UUID."
+        summary = "Démarrer l'expédition",
+        description = "Marque un Shipment comme IN_TRANSIT."
     )
-    public ResponseEntity<Shipment> addShipmentEvent(
-            @Parameter(description = "UUID du Shipment") @PathVariable UUID id,
-            @Parameter(description = "Type d'événement de suivi") @RequestParam ShipmentEventType eventType,
-            @Parameter(description = "Description de l'événement") @RequestBody String payload) {
-        Shipment shipment = carrierService.pushTracking(id, eventType, payload);
+    public ResponseEntity<Shipment> startShipment(
+        @RequestBody StartShipmentRequest request) {
+        Shipment shipment = carrierService.pushTracking(
+            request.getShipmentId(),
+            ShipmentEventType.IN_TRANSIT,
+            "Shipment started"
+        );
+        return ResponseEntity.ok(shipment);
+    }
+
+    @PostMapping("/delivered")
+    @Operation(
+        summary = "Marquer une expédition comme livrée",
+        description = "Marque un Shipment comme FULFILLED."
+    )
+    public ResponseEntity<Shipment> markAsDelivered(
+        @RequestBody DeliveredShipmentRequest request) {
+        Shipment shipment = carrierService.pushTracking(
+            request.getShipmentId(),
+            ShipmentEventType.FULFILLED,
+            "Shipment delivered"
+        );
         return ResponseEntity.ok(shipment);
     }
 
@@ -127,5 +144,29 @@ class CreateShipmentRequest {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+}
+
+class StartShipmentRequest {
+    private UUID shipmentId;
+
+    public UUID getShipmentId() {
+        return shipmentId;
+    }
+
+    public void setShipmentId(UUID shipmentId) {
+        this.shipmentId = shipmentId;
+    }
+}
+
+class DeliveredShipmentRequest {
+    private UUID shipmentId;
+
+    public UUID getShipmentId() {
+        return shipmentId;
+    }
+
+    public void setShipmentId(UUID shipmentId) {
+        this.shipmentId = shipmentId;
     }
 } 

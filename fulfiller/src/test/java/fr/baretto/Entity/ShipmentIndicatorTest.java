@@ -28,7 +28,7 @@ class ShipmentIndicatorTest {
         indicator = new ShipmentIndicator();
         indicator.setId(indicatorId);
         indicator.setShipment(shipment);
-        indicator.setEventType(ShipmentEventType.SHIPMENT_CREATED);
+        indicator.setEventType(ShipmentEventType.CREATED);
         indicator.setEventDescription("Test event");
     }
 
@@ -46,16 +46,16 @@ class ShipmentIndicatorTest {
     @Test
     void gettersAndSetters_ShouldWorkCorrectly() {
         UUID newId = UUID.randomUUID();
-        String newEventDescription = "SHIPMENT_DELIVERED";
+        String newEventDescription = "FULFILLED";
         LocalDateTime newCreatedAt = LocalDateTime.now();
         
         indicator.setId(newId);
         indicator.setEventDescription(newEventDescription);
-        indicator.setEventType(ShipmentEventType.SHIPMENT_DELIVERED);
+        indicator.setEventType(ShipmentEventType.FULFILLED);
         indicator.setCreatedAt(newCreatedAt);
 
         assertEquals(newId, indicator.getId());
-        assertEquals(ShipmentEventType.SHIPMENT_DELIVERED, indicator.getEventType());
+        assertEquals(ShipmentEventType.FULFILLED, indicator.getEventType());
         assertEquals(newEventDescription, indicator.getEventDescription());
         assertEquals(newCreatedAt, indicator.getCreatedAt());
     }
@@ -84,16 +84,16 @@ class ShipmentIndicatorTest {
     @Test
     void eventType_ShouldBeUpdatedCorrectly() {
         // Test de l'événement de livraison
-        indicator.setEventType(ShipmentEventType.SHIPMENT_DELIVERED);
-        assertEquals(ShipmentEventType.SHIPMENT_DELIVERED, indicator.getEventType());
+        indicator.setEventType(ShipmentEventType.FULFILLED);
+        assertEquals(ShipmentEventType.FULFILLED, indicator.getEventType());
     }
 
     @Test
     public void testDeliveryEvent() {
         ShipmentIndicator indicator = new ShipmentIndicator();
-        indicator.setEventType(ShipmentEventType.SHIPMENT_DELIVERED);
+        indicator.setEventType(ShipmentEventType.FULFILLED);
         indicator.setEventDescription("Colis livré");
-        assertEquals(ShipmentEventType.SHIPMENT_DELIVERED, indicator.getEventType());
+        assertEquals(ShipmentEventType.FULFILLED, indicator.getEventType());
         assertEquals("Colis livré", indicator.getEventDescription());
     }
 } 

@@ -12,6 +12,7 @@ import fr.baretto.Repository.FulfillmentOrderRepository;
 import fr.baretto.Repository.ShipmentIndicatorRepository;
 import fr.baretto.Repository.ShipmentRepository;
 import fr.baretto.Repository.WarehouseRepository;
+import fr.baretto.Exception.FulfillmentOrderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +48,7 @@ public class CarrierService {
 
     public Carrier getCarrierById(UUID id) {
         return carrierRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Transporteur non trouvé"));
+            .orElseThrow(() -> new FulfillmentOrderException("Transporteur non trouvé"));
     }
 
     @Transactional
@@ -75,7 +76,7 @@ public class CarrierService {
     public Carrier addWarehouseToCarrier(UUID carrierId, UUID warehouseId) {
         Carrier carrier = getCarrierById(carrierId);
         Warehouse warehouse = warehouseRepository.findById(warehouseId)
-            .orElseThrow(() -> new RuntimeException("Entrepôt non trouvé"));
+            .orElseThrow(() -> new FulfillmentOrderException("Entrepôt non trouvé"));
         
         carrier.getIncludedWarehouses().add(warehouse);
         return carrierRepository.save(carrier);
@@ -85,7 +86,7 @@ public class CarrierService {
     public Carrier removeWarehouseFromCarrier(UUID carrierId, UUID warehouseId) {
         Carrier carrier = getCarrierById(carrierId);
         Warehouse warehouse = warehouseRepository.findById(warehouseId)
-            .orElseThrow(() -> new RuntimeException("Entrepôt non trouvé"));
+            .orElseThrow(() -> new FulfillmentOrderException("Entrepôt non trouvé"));
         
         carrier.getIncludedWarehouses().remove(warehouse);
         return carrierRepository.save(carrier);
@@ -94,28 +95,28 @@ public class CarrierService {
     @Transactional
     public Shipment createShipment(UUID orderId, UUID carrierId) {
         FulfillmentOrder order = fulfillmentOrderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new FulfillmentOrderException("Commande non trouvée"));
         
         Carrier carrier = carrierRepository.findById(carrierId)
-                .orElseThrow(() -> new RuntimeException("Carrier not found"));
+                .orElseThrow(() -> new FulfillmentOrderException("Transporteur non trouvé"));
 
-        if (order.getItems().isEmpty()) {
-            throw new RuntimeException("Cannot create shipment for order with no items");
+        if (order.getOrderLines().isEmpty()) {
+            throw new FulfillmentOrderException("Impossible de créer un colis pour une commande sans articles");
         }
 
         Shipment shipment = new Shipment();
         shipment.setFulfillmentOrder(order);
         shipment.setCarrier(carrier);
-        shipment.setStatus(FulfillmentStatus.ACCEPTED);
+        shipment.setStatus(FulfillmentStatus.VALIDATED);
         shipment.setTrackingNumber("TRACK-" + UUID.randomUUID().toString().substring(0, 8));
         shipment.setCurrency("EUR");
-        shipment.setOrderItem(order.getItems().get(0));
+        shipment.setOrderItem(order.getOrderLines().get(0));
         
         Shipment savedShipment = shipmentRepository.save(shipment);
         
         ShipmentIndicator indicator = new ShipmentIndicator();
         indicator.setShipment(savedShipment);
-        indicator.setEventType(ShipmentEventType.SHIPMENT_CREATED);
+        indicator.setEventType(ShipmentEventType.CREATED);
         indicator.setEventDescription("Création du colis");
         shipmentIndicatorRepository.save(indicator);
         
@@ -125,13 +126,13 @@ public class CarrierService {
     @Transactional
     public Shipment pushTracking(UUID shipmentId, ShipmentEventType eventType, String description) {
         Shipment shipment = shipmentRepository.findById(shipmentId)
-                .orElseThrow(() -> new RuntimeException("Shipment not found"));
+                .orElseThrow(() -> new FulfillmentOrderException("Colis non trouvé"));
         
         // Mettre à jour le statut de la commande et du shipment
         FulfillmentOrder order = shipment.getFulfillmentOrder();
-        if (eventType == ShipmentEventType.SHIPMENT_DELIVERED) {
-            order.setStatus(FulfillmentStatus.DELIVERED);
-            shipment.setStatus(FulfillmentStatus.DELIVERED);
+        if (eventType == ShipmentEventType.FULFILLED) {
+            order.setStatus(FulfillmentStatus.FULFILLED);
+            shipment.setStatus(FulfillmentStatus.FULFILLED);
         } else {
             order.setStatus(FulfillmentStatus.IN_DELIVERY);
             shipment.setStatus(FulfillmentStatus.IN_DELIVERY);

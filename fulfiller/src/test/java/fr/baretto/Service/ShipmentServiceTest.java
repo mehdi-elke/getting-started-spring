@@ -50,13 +50,13 @@ class ShipmentServiceTest {
         indicator1 = new ShipmentIndicator();
         indicator1.setId(UUID.randomUUID());
         indicator1.setShipment(shipment);
-        indicator1.setEventType(ShipmentEventType.SHIPMENT_CREATED);
+        indicator1.setEventType(ShipmentEventType.CREATED);
         indicator1.setEventDescription("Shipment created");
         
         indicator2 = new ShipmentIndicator();
         indicator2.setId(UUID.randomUUID());
         indicator2.setShipment(shipment);
-        indicator2.setEventType(ShipmentEventType.SHIPMENT_IN_TRANSIT);
+        indicator2.setEventType(ShipmentEventType.IN_TRANSIT);
         indicator2.setEventDescription("Shipment in transit");
     }
 
@@ -70,8 +70,8 @@ class ShipmentServiceTest {
 
         assertNotNull(results);
         assertEquals(2, results.size());
-        assertEquals(ShipmentEventType.SHIPMENT_CREATED, results.get(0).getEventType());
-        assertEquals(ShipmentEventType.SHIPMENT_IN_TRANSIT, results.get(1).getEventType());
+        assertEquals(ShipmentEventType.CREATED, results.get(0).getEventType());
+        assertEquals(ShipmentEventType.IN_TRANSIT, results.get(1).getEventType());
     }
 
     @Test

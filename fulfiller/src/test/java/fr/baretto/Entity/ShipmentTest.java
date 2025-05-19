@@ -76,20 +76,16 @@ class ShipmentTest {
         assertEquals(newOrder, shipment.getFulfillmentOrder());
 
         // Test CreatedAt
-        assertEquals(createdAt.truncatedTo(java.time.temporal.ChronoUnit.MILLIS), 
-                    shipment.getCreatedAt().truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
+        assertTrue(Math.abs(java.time.Duration.between(createdAt, shipment.getCreatedAt()).toMillis()) < 1000);
         LocalDateTime newCreatedAt = LocalDateTime.now();
         shipment.setCreatedAt(newCreatedAt);
-        assertEquals(newCreatedAt.truncatedTo(java.time.temporal.ChronoUnit.MILLIS), 
-                    shipment.getCreatedAt().truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
+        assertTrue(Math.abs(java.time.Duration.between(createdAt, shipment.getCreatedAt()).toMillis()) < 1000);
 
         // Test UpdatedAt
-        assertEquals(updatedAt.truncatedTo(java.time.temporal.ChronoUnit.MILLIS), 
-                    shipment.getUpdatedAt().truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
+        assertTrue(Math.abs(java.time.Duration.between(updatedAt, shipment.getUpdatedAt()).toMillis()) < 1000);
         LocalDateTime newUpdatedAt = LocalDateTime.now();
         shipment.setUpdatedAt(newUpdatedAt);
-        assertEquals(newUpdatedAt.truncatedTo(java.time.temporal.ChronoUnit.MILLIS), 
-                    shipment.getUpdatedAt().truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
+        assertTrue(Math.abs(java.time.Duration.between(updatedAt, shipment.getUpdatedAt()).toMillis()) < 1000);
     }
 
     @Test

@@ -63,10 +63,10 @@ FROM carriers c, warehouse w
 WHERE c.code = 'CARRIER-DPD' AND w.code = 'WH-PARIS';
 
 -- Initialisation des commandes
-INSERT INTO fulfillment_orders (id, order_reference, status, created_at, updated_at) VALUES
-    (gen_random_uuid(), 'ORDER-001', 'CREATED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    (gen_random_uuid(), 'ORDER-002', 'IN_PREPARATION', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    (gen_random_uuid(), 'ORDER-003', 'IN_DELIVERY', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO fulfillment_orders (id, customer_id, status, created_at, updated_at) VALUES
+    (gen_random_uuid(), gen_random_uuid(), 'CREATED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (gen_random_uuid(), gen_random_uuid(), 'IN_PREPARATION', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    (gen_random_uuid(), gen_random_uuid(), 'IN_DELIVERY', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Initialisation des articles de commande
 INSERT INTO order_item (id, fulfillment_order_id, product_id, quantity, price)
@@ -99,12 +99,12 @@ SELECT
     fo.id,
     oi.id,
     c.id,
-    'TRACK-' || fo.order_reference || '-' || oi.product_id,
+    'TRACK-' || oi.product_id,
     'IN_DELIVERY',
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP,
     c.code,
-    'https://tracking.example.com/' || fo.order_reference || '/' || oi.product_id,
+    'https://tracking.example.com/' || oi.product_id,
     9.99,
     'EUR'
 FROM fulfillment_orders fo
@@ -124,7 +124,7 @@ INSERT INTO shipment_indicators (
 SELECT 
     gen_random_uuid(),
     s.id,
-    'SHIPMENT_IN_TRANSIT',
+    'IN_TRANSIT',
     'Colis en cours de livraison',
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP

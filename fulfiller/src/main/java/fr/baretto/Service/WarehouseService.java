@@ -15,28 +15,32 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class WarehouseService {
 
     private final FulfillmentOrderRepository fulfillmentOrderRepository;
     private final ShipmentRepository shipmentRepository;
+    private final WarehouseRepository warehouseRepository;
 
     @Autowired
     public WarehouseService(
             FulfillmentOrderRepository fulfillmentOrderRepository,
-            ShipmentRepository shipmentRepository) {
+            ShipmentRepository shipmentRepository,
+            WarehouseRepository warehouseRepository) {
         this.fulfillmentOrderRepository = fulfillmentOrderRepository;
         this.shipmentRepository = shipmentRepository;
+        this.warehouseRepository = warehouseRepository;
     }
 
     @Transactional
     public FulfillmentOrder startPreparation(UUID orderId) {
         FulfillmentOrder order = fulfillmentOrderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new FulfillmentOrderException("Commande non trouvée"));
 
-        if (order.getStatus() != FulfillmentStatus.ACCEPTED) {
-            throw new RuntimeException("Order status must be ACCEPTED to start preparation");
+        if (order.getStatus() != FulfillmentStatus.VALIDATED) {
+            throw new FulfillmentOrderException("La commande doit être en statut VALIDATED pour commencer la préparation");
         }
 
         order.setStatus(FulfillmentStatus.IN_PREPARATION);
@@ -52,10 +56,10 @@ public class WarehouseService {
     @Transactional
     public FulfillmentOrder finishPreparation(UUID orderId) {
         FulfillmentOrder order = fulfillmentOrderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new FulfillmentOrderException("Commande non trouvée"));
 
         if (order.getStatus() != FulfillmentStatus.IN_PREPARATION) {
-            throw new RuntimeException("Order status must be IN_PREPARATION to finish preparation");
+            throw new FulfillmentOrderException("La commande doit être en statut IN_PREPARATION pour terminer la préparation");
         }
 
         order.setStatus(FulfillmentStatus.IN_DELIVERY);
@@ -71,11 +75,8 @@ public class WarehouseService {
     public List<OrderItem> getOrderItems(UUID orderId) {
         FulfillmentOrder order = fulfillmentOrderRepository.findById(orderId)
                 .orElseThrow(() -> new FulfillmentOrderException("Commande non trouvée: " + orderId));
-        return order.getItems();
+        return order.getOrderLines();
     }
-    
-    @Autowired
-    private WarehouseRepository warehouseRepository;
     
     public List<Warehouse> getWarehouses() {
         return warehouseRepository.findAll();

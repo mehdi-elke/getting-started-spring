@@ -2,9 +2,9 @@ package fr.baretto.Enumeration;
 
 public enum FulfillmentStatus {
     CREATED,
-    ACCEPTED,
+    VALIDATED,
     IN_PREPARATION,
     IN_DELIVERY,
-    DELIVERED,
-    CANCELLED
+    IN_TRANSIT,
+    FULFILLED
 }

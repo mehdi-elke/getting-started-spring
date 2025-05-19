@@ -78,7 +78,7 @@ class CarrierServiceTest {
         item.setProductId("PROD-TEST");
         item.setQuantity(1);
         item.setPrice(new java.math.BigDecimal("10.00"));
-        order.addItem(item);
+        order.getOrderLines().add(item);
 
         when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(carrierRepository.findById(carrierId)).thenReturn(Optional.of(carrier));
@@ -114,7 +114,7 @@ class CarrierServiceTest {
 
     @Test
     void createShipment_ShouldThrowException_WhenInvalidOrderStatus() {
-        order.setStatus(FulfillmentStatus.ACCEPTED);
+        order.setStatus(FulfillmentStatus.VALIDATED);
         when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
         assertThrows(RuntimeException.class, () -> carrierService.createShipment(orderId, carrierId));
@@ -129,7 +129,7 @@ class CarrierServiceTest {
         when(shipmentRepository.save(any(Shipment.class))).thenReturn(shipment);
         when(shipmentIndicatorRepository.save(any(ShipmentIndicator.class))).thenAnswer(i -> i.getArgument(0));
 
-        Shipment result = carrierService.pushTracking(shipmentId, ShipmentEventType.SHIPMENT_IN_TRANSIT, "Test event");
+        Shipment result = carrierService.pushTracking(shipmentId, ShipmentEventType.IN_TRANSIT, "Test event");
 
         assertNotNull(result);
         assertEquals(shipment, result);
@@ -145,10 +145,10 @@ class CarrierServiceTest {
         when(shipmentRepository.save(any(Shipment.class))).thenAnswer(i -> i.getArgument(0));
         when(shipmentIndicatorRepository.save(any(ShipmentIndicator.class))).thenAnswer(i -> i.getArgument(0));
 
-        Shipment result = carrierService.pushTracking(shipmentId, ShipmentEventType.SHIPMENT_DELIVERED, "Test event");
+        Shipment result = carrierService.pushTracking(shipmentId, ShipmentEventType.FULFILLED, "Test event");
 
         assertNotNull(result);
-        assertEquals(FulfillmentStatus.DELIVERED, result.getStatus());
+        assertEquals(FulfillmentStatus.FULFILLED, result.getStatus());
         verify(shipmentRepository).save(shipment);
     }
 
@@ -157,7 +157,7 @@ class CarrierServiceTest {
         UUID shipmentId = UUID.randomUUID();
         when(shipmentRepository.findById(shipmentId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> carrierService.pushTracking(shipmentId, ShipmentEventType.SHIPMENT_IN_TRANSIT, "Test event"));
+        assertThrows(RuntimeException.class, () -> carrierService.pushTracking(shipmentId, ShipmentEventType.IN_TRANSIT, "Test event"));
         verify(shipmentIndicatorRepository, never()).save(any(ShipmentIndicator.class));
     }
 } 

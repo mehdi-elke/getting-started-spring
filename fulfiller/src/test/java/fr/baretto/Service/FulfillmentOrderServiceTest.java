@@ -2,15 +2,18 @@ package fr.baretto.Service;
 
 import fr.baretto.Entity.FulfillmentOrder;
 import fr.baretto.Entity.OrderItem;
+import fr.baretto.Entity.Carrier;
 import fr.baretto.Enumeration.FulfillmentStatus;
 import fr.baretto.Repository.FulfillmentOrderRepository;
 import fr.baretto.Repository.OrderItemRepository;
+import fr.baretto.Repository.CarrierRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +31,9 @@ class FulfillmentOrderServiceTest {
 
     @Mock
     private OrderItemRepository orderItemRepository;
+
+    @Mock
+    private CarrierRepository carrierRepository;
 
     @InjectMocks
     private FulfillmentOrderService fulfillmentOrderService;
@@ -59,18 +65,18 @@ class FulfillmentOrderServiceTest {
         item2.setProductId("PROD-002");
         item2.setQuantity(1);
 
-        order.setItems(Arrays.asList(item1, item2));
+        order.setOrderLines(new java.util.ArrayList<>(Arrays.asList(item1, item2)));
     }
 
     @Test
-    void acceptOrder_ShouldChangeStatusToAccepted() {
+    void acceptOrder_ShouldChangeStatusToValidated() {
         when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(fulfillmentOrderRepository.save(any(FulfillmentOrder.class))).thenAnswer(i -> i.getArgument(0));
 
         FulfillmentOrder result = fulfillmentOrderService.acceptOrder(orderId);
 
         assertNotNull(result);
-        assertEquals(FulfillmentStatus.ACCEPTED, result.getStatus());
+        assertEquals(FulfillmentStatus.VALIDATED, result.getStatus());
         verify(fulfillmentOrderRepository).save(any(FulfillmentOrder.class));
     }
 
@@ -84,7 +90,7 @@ class FulfillmentOrderServiceTest {
 
     @Test
     void acceptOrder_ShouldThrowException_WhenInvalidStatus() {
-        order.setStatus(FulfillmentStatus.ACCEPTED);
+        order.setStatus(FulfillmentStatus.VALIDATED);
         when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
         assertThrows(RuntimeException.class, () -> fulfillmentOrderService.acceptOrder(orderId));
@@ -93,7 +99,7 @@ class FulfillmentOrderServiceTest {
 
     @Test
     void markPrepared_ShouldChangeStatusToInPreparation() {
-        order.setStatus(FulfillmentStatus.ACCEPTED);
+        order.setStatus(FulfillmentStatus.VALIDATED);
         when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(orderItemRepository.findByFulfillmentOrderId(orderId)).thenReturn(Arrays.asList(item1, item2));
         when(fulfillmentOrderRepository.save(any(FulfillmentOrder.class))).thenAnswer(i -> i.getArgument(0));
@@ -123,11 +129,40 @@ class FulfillmentOrderServiceTest {
 
     @Test
     void markPrepared_ShouldThrowException_WhenNoItems() {
-        order.setStatus(FulfillmentStatus.ACCEPTED);
+        order.setStatus(FulfillmentStatus.VALIDATED);
         when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(orderItemRepository.findByFulfillmentOrderId(orderId)).thenReturn(Collections.emptyList());
 
         assertThrows(RuntimeException.class, () -> fulfillmentOrderService.markPrepared(orderId));
+        verify(fulfillmentOrderRepository, never()).save(any(FulfillmentOrder.class));
+    }
+
+    @Test
+    void markReadyForDelivery_ShouldChangeStatusToInDelivery() {
+        order.setStatus(FulfillmentStatus.IN_PREPARATION);
+        when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(fulfillmentOrderRepository.save(any(FulfillmentOrder.class))).thenAnswer(i -> i.getArgument(0));
+
+        FulfillmentOrder result = fulfillmentOrderService.markReadyForDelivery(orderId);
+
+        assertNotNull(result);
+        assertEquals(FulfillmentStatus.IN_DELIVERY, result.getStatus());
+        verify(fulfillmentOrderRepository).save(any(FulfillmentOrder.class));
+    }
+
+    @Test
+    void markReadyForDelivery_ShouldThrowException_WhenOrderNotFound() {
+        when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> fulfillmentOrderService.markReadyForDelivery(orderId));
+        verify(fulfillmentOrderRepository, never()).save(any(FulfillmentOrder.class));
+    }
+
+    @Test
+    void markReadyForDelivery_ShouldThrowException_WhenInvalidStatus() {
+        when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+        assertThrows(RuntimeException.class, () -> fulfillmentOrderService.markReadyForDelivery(orderId));
         verify(fulfillmentOrderRepository, never()).save(any(FulfillmentOrder.class));
     }
 
@@ -160,5 +195,61 @@ class FulfillmentOrderServiceTest {
         assertEquals(2, results.size());
         assertEquals("PROD-001", results.get(0).getProductId());
         assertEquals("PROD-002", results.get(1).getProductId());
+    }
+
+    @Test
+    void createOrder_ShouldCreateNewOrder() {
+        when(fulfillmentOrderRepository.save(any(FulfillmentOrder.class))).thenAnswer(i -> i.getArgument(0));
+
+        FulfillmentOrder result = fulfillmentOrderService.createOrder("TEST-REF");
+
+        assertNotNull(result);
+        assertEquals(FulfillmentStatus.CREATED, result.getStatus());
+        verify(fulfillmentOrderRepository).save(any(FulfillmentOrder.class));
+    }
+
+    @Test
+    void addItem_ShouldAddItemToOrder() {
+        when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(fulfillmentOrderRepository.save(any(FulfillmentOrder.class))).thenAnswer(i -> i.getArgument(0));
+        when(carrierRepository.findAll()).thenReturn(Collections.singletonList(new Carrier()));
+
+        OrderItem result = fulfillmentOrderService.addItem(orderId, "PROD-003", 1, new BigDecimal("10.00"));
+
+        assertNotNull(result);
+        assertEquals("PROD-003", result.getProductId());
+        assertEquals(1, result.getQuantity());
+        assertEquals(new BigDecimal("10.00"), result.getPrice());
+        verify(fulfillmentOrderRepository).save(any(FulfillmentOrder.class));
+    }
+
+    @Test
+    void addItem_ShouldThrowException_WhenOrderNotFound() {
+        when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> 
+            fulfillmentOrderService.addItem(orderId, "PROD-003", 1, new BigDecimal("10.00")));
+        verify(fulfillmentOrderRepository, never()).save(any(FulfillmentOrder.class));
+    }
+
+    @Test
+    void addItem_ShouldThrowException_WhenOrderInDelivery() {
+        order.setStatus(FulfillmentStatus.IN_DELIVERY);
+        when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+        assertThrows(RuntimeException.class, () -> 
+            fulfillmentOrderService.addItem(orderId, "PROD-003", 1, new BigDecimal("10.00")));
+        verify(fulfillmentOrderRepository, never()).save(any(FulfillmentOrder.class));
+    }
+
+    @Test
+    void addItem_ShouldThrowException_WhenNoCarrierAvailable() {
+        // On initialise la commande sans items
+        order.setOrderLines(new java.util.ArrayList<>());
+        when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(carrierRepository.findAll()).thenReturn(Collections.emptyList());
+
+        assertThrows(RuntimeException.class, () -> 
+            fulfillmentOrderService.addItem(orderId, "PROD-003", 1, new BigDecimal("10.00")));
     }
 } 

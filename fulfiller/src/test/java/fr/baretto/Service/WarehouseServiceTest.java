@@ -9,6 +9,7 @@ import fr.baretto.Exception.OrderNotFoundException;
 import fr.baretto.Repository.FulfillmentOrderRepository;
 import fr.baretto.Repository.OrderItemRepository;
 import fr.baretto.Repository.ShipmentRepository;
+import fr.baretto.Repository.WarehouseRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -36,6 +37,9 @@ class WarehouseServiceTest {
     @Mock
     private ShipmentRepository shipmentRepository;
 
+    @Mock
+    private WarehouseRepository warehouseRepository;
+
     private UUID orderId;
     private FulfillmentOrder order;
     private List<OrderItem> items;
@@ -47,7 +51,7 @@ class WarehouseServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        this.warehouseService = new WarehouseService(fulfillmentOrderRepository, shipmentRepository);
+        this.warehouseService = new WarehouseService(fulfillmentOrderRepository, shipmentRepository, warehouseRepository);
 
         orderId = UUID.randomUUID();
         order = new FulfillmentOrder();
@@ -72,7 +76,7 @@ class WarehouseServiceTest {
         item.addShipment(shipment);
         item.addShipment(shipment2);
         items.add(item);
-        order.setItems(items);
+        order.setOrderLines(items);
     }
 
     @Test
@@ -82,7 +86,7 @@ class WarehouseServiceTest {
         when(fulfillmentOrderRepository.save(any(FulfillmentOrder.class))).thenReturn(order);
         when(shipmentRepository.save(any(Shipment.class))).thenReturn(shipment);
 
-        order.setStatus(FulfillmentStatus.ACCEPTED);
+        order.setStatus(FulfillmentStatus.VALIDATED);
 
         FulfillmentOrder result = warehouseService.startPreparation(orderId);
 

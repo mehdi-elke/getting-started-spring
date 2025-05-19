@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,7 +46,6 @@ public class FulfillmentOrderService {
     @Transactional
     public FulfillmentOrder createOrder(String orderReference) {
         FulfillmentOrder order = new FulfillmentOrder();
-        order.setOrderReference(orderReference);
         order.setStatus(FulfillmentStatus.CREATED);
         return fulfillmentOrderRepository.save(order);
     }
@@ -56,47 +54,77 @@ public class FulfillmentOrderService {
     public FulfillmentOrder acceptOrder(UUID orderId) {
         FulfillmentOrder order = getOrder(orderId);
         if (order.getStatus() != FulfillmentStatus.CREATED) {
-            throw new FulfillmentOrderException("La commande doit être en statut CREATED pour être acceptée");
+            throw new FulfillmentOrderException("La commande doit être en statut CREATED pour être validée");
         }
-        order.setStatus(FulfillmentStatus.ACCEPTED);
+        if (order.getOrderLines().isEmpty()) {
+            throw new FulfillmentOrderException("La commande doit contenir au moins un article pour être validée");
+        }
+        order.setStatus(FulfillmentStatus.VALIDATED);
         return fulfillmentOrderRepository.save(order);
     }
 
     @Transactional
     public FulfillmentOrder markPrepared(UUID orderId) {
         FulfillmentOrder order = getOrder(orderId);
-        if (order.getStatus() != FulfillmentStatus.ACCEPTED) {
-            throw new FulfillmentOrderException("La commande doit être en statut ACCEPTED pour être marquée comme préparée");
+        if (order.getStatus() != FulfillmentStatus.VALIDATED) {
+            throw new FulfillmentOrderException("La commande doit être en statut VALIDATED pour être marquée comme préparée");
         }
         List<OrderItem> items = orderItemRepository.findByFulfillmentOrderId(orderId);
         if (items.isEmpty()) {
             throw new FulfillmentOrderException("La commande doit avoir au moins un item pour être marquée comme préparée");
         }
+        
+        // Vérifier que tous les articles ont un prix valide
+        for (OrderItem item : items) {
+            if (item.getPrice() == null || item.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new FulfillmentOrderException("Tous les articles doivent avoir un prix valide");
+            }
+        }
+        
         order.setStatus(FulfillmentStatus.IN_PREPARATION);
+        return fulfillmentOrderRepository.save(order);
+    }
+
+    @Transactional
+    public FulfillmentOrder markReadyForDelivery(UUID orderId) {
+        FulfillmentOrder order = getOrder(orderId);
+        if (order.getStatus() != FulfillmentStatus.IN_PREPARATION) {
+            throw new FulfillmentOrderException("La commande doit être en statut IN_PREPARATION pour être marquée comme prête pour la livraison");
+        }
+        
+        // Vérifier que tous les articles ont été préparés
+        List<OrderItem> items = orderItemRepository.findByFulfillmentOrderId(orderId);
+        if (items.isEmpty()) {
+            throw new FulfillmentOrderException("La commande doit avoir au moins un item pour être marquée comme prête pour la livraison");
+        }
+        
+        order.setStatus(FulfillmentStatus.IN_DELIVERY);
         return fulfillmentOrderRepository.save(order);
     }
 
     @Transactional
     public OrderItem addItem(UUID orderId, String productId, int quantity, BigDecimal price) {
         FulfillmentOrder order = getOrder(orderId);
-        if (order.getStatus() == FulfillmentStatus.IN_DELIVERY || order.getStatus() == FulfillmentStatus.DELIVERED) {
-            throw new FulfillmentOrderException("Impossible d'ajouter un item à une commande en livraison ou livrée");
+        if (order.getStatus() == FulfillmentStatus.IN_DELIVERY || 
+            order.getStatus() == FulfillmentStatus.IN_TRANSIT || 
+            order.getStatus() == FulfillmentStatus.FULFILLED) {
+            throw new FulfillmentOrderException("Impossible d'ajouter un item à une commande en cours de livraison ou livrée");
         }
 
         OrderItem item = new OrderItem();
         item.setProductId(productId);
         item.setQuantity(quantity);
         item.setPrice(price);
-        order.addItem(item);
+        order.addOrderLine(item);
         fulfillmentOrderRepository.save(order);
 
-        if (order.getItems().size() == 1) {
+        if (order.getOrderLines().size() == 1) {
             Carrier carrier = carrierRepository.findAll().stream().findFirst()
                 .orElseThrow(() -> new FulfillmentOrderException("Aucun transporteur disponible"));
             Shipment shipment = new Shipment();
             shipment.setFulfillmentOrder(order);
             shipment.setCarrier(carrier);
-            shipment.setStatus(FulfillmentStatus.ACCEPTED);
+            shipment.setStatus(FulfillmentStatus.VALIDATED);
             shipment.setCurrency("EUR");
             shipment.setTrackingNumber("AUTO-" + UUID.randomUUID());
             shipment.setOrderItem(item);
@@ -113,7 +141,7 @@ public class FulfillmentOrderService {
 
     public List<OrderItem> getOrderItems(UUID orderId) {
         FulfillmentOrder order = getOrder(orderId);
-        return order.getItems();
+        return order.getOrderLines();
     }
 
     public List<FulfillmentOrder> getAllOrders() {

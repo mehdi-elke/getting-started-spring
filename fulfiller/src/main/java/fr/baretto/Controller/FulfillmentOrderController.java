@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/fulfillment/orders")
-@Tag(name = "FulfillmentOrder", description = "Gestion des commandes de fulfillment")
+@RequestMapping("/fulfillment")
+@Tag(name = "Fulfillment", description = "Gestion du fulfillment des commandes")
 public class FulfillmentOrderController {
 
     private final FulfillmentOrderService fulfillmentOrderService;
@@ -26,6 +26,39 @@ public class FulfillmentOrderController {
         this.fulfillmentOrderService = fulfillmentOrderService;
     }
 
+    @PostMapping("/validate")
+    @Operation(
+        summary = "Valider une commande",
+        description = "Valide une commande en changeant son statut en VALIDATED."
+    )
+    public ResponseEntity<FulfillmentOrder> validateOrder(
+        @RequestBody ValidateOrderRequest request) {
+        FulfillmentOrder order = fulfillmentOrderService.acceptOrder(request.getOrderId());
+        return ResponseEntity.ok(order);
+    }
+
+    @PostMapping("/start")
+    @Operation(
+        summary = "Démarrer la préparation d'une commande",
+        description = "Lance la préparation d'une commande en changeant son statut en IN_PREPARATION. La commande doit être en statut VALIDATED."
+    )
+    public ResponseEntity<FulfillmentOrder> startFulfillment(
+        @RequestBody StartFulfillmentRequest request) {
+        FulfillmentOrder order = fulfillmentOrderService.markPrepared(request.getOrderId());
+        return ResponseEntity.ok(order);
+    }
+
+    @PostMapping("/ready")
+    @Operation(
+        summary = "Marquer une commande comme prête pour la livraison",
+        description = "Termine la préparation et passe la commande en IN_DELIVERY."
+    )
+    public ResponseEntity<FulfillmentOrder> readyForDelivery(
+        @RequestBody ReadyForDeliveryRequest request) {
+        FulfillmentOrder order = fulfillmentOrderService.markReadyForDelivery(request.getOrderId());
+        return ResponseEntity.ok(order);
+    }
+
     @PostMapping
     @Operation(
         summary = "Créer une commande de fulfillment",
@@ -33,28 +66,6 @@ public class FulfillmentOrderController {
     )
     public ResponseEntity<FulfillmentOrder> createOrder(@RequestBody CreateOrderRequest request) {
         FulfillmentOrder order = fulfillmentOrderService.createOrder(request.getOrderReference());
-        return ResponseEntity.ok(order);
-    }
-
-    @PostMapping("/{id}/prepare")
-    @Operation(
-        summary = "Accepter une commande de fulfillment",
-        description = "Change le statut de la commande en ACCEPTED."
-    )
-    public ResponseEntity<FulfillmentOrder> prepareOrder(
-        @Parameter(description = "UUID de la commande de fulfillment") @PathVariable UUID id) {
-        FulfillmentOrder order = fulfillmentOrderService.acceptOrder(id);
-        return ResponseEntity.ok(order);
-    }
-
-    @PostMapping("/{id}/prepared")
-    @Operation(
-        summary = "Marquer une commande comme préparée",
-        description = "Change le statut de la commande en IN_PREPARATION si tous les items sont disponibles."
-    )
-    public ResponseEntity<FulfillmentOrder> markOrderPrepared(
-        @Parameter(description = "UUID de la commande de fulfillment") @PathVariable UUID id) {
-        FulfillmentOrder order = fulfillmentOrderService.markPrepared(id);
         return ResponseEntity.ok(order);
     }
 
@@ -99,15 +110,13 @@ public class FulfillmentOrderController {
 
     @GetMapping()
     @Operation(
-        summary = "Récupérer toutes les commandes avec leurs données complètes",
-        description = "Retourne la liste complète des commandes avec leurs items et expéditions associés."
+        summary = "Récupérer toutes les commandes",
+        description = "Retourne la liste complète des commandes."
     )
-    public ResponseEntity<List<FulfillmentOrder>> getAllOrdersWithDetails() {
+    public ResponseEntity<List<FulfillmentOrder>> getAllOrders() {
         return ResponseEntity.ok(fulfillmentOrderService.getAllOrders());
     }
 }
-
-
 
 class CreateOrderRequest {
     private String orderReference;
@@ -148,5 +157,41 @@ class AddItemRequest {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+}
+
+class StartFulfillmentRequest {
+    private UUID orderId;
+
+    public UUID getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(UUID orderId) {
+        this.orderId = orderId;
+    }
+}
+
+class ReadyForDeliveryRequest {
+    private UUID orderId;
+
+    public UUID getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(UUID orderId) {
+        this.orderId = orderId;
+    }
+}
+
+class ValidateOrderRequest {
+    private UUID orderId;
+
+    public UUID getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(UUID orderId) {
+        this.orderId = orderId;
     }
 } 

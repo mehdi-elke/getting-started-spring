@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import fr.baretto.Enumeration.FulfillmentStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "fulfillment_orders")
@@ -20,16 +20,26 @@ public class FulfillmentOrder extends TimestableEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "order_reference", nullable = false, unique = true)
-    private String orderReference;
+    @NotNull
+    @Column(name = "customer_id", nullable = false)
+    private UUID customerId;
+
+    @Embedded
+    @NotNull
+    private DeliveryAddress deliveryAddress;
+
+    @Embedded
+    @NotNull
+    private Contact contact;
+
+    @OneToMany(mappedBy = "fulfillmentOrder", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderItem> orderLines = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private FulfillmentStatus status = FulfillmentStatus.IN_PREPARATION;
+    private FulfillmentStatus status = FulfillmentStatus.CREATED;
 
-    @OneToMany(mappedBy = "fulfillmentOrder", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<OrderItem> items = new ArrayList<>();
-
+    // Getters et Setters
     public UUID getId() {
         return id;
     }
@@ -38,12 +48,39 @@ public class FulfillmentOrder extends TimestableEntity {
         this.id = id;
     }
 
-    public String getOrderReference() {
-        return orderReference;
+    public UUID getCustomerId() {
+        return customerId;
     }
 
-    public void setOrderReference(String orderReference) {
-        this.orderReference = orderReference;
+    public void setCustomerId(UUID customerId) {
+        this.customerId = customerId;
+        updateTimestamp();
+    }
+
+    public DeliveryAddress getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(DeliveryAddress deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+        updateTimestamp();
+    }
+
+    public Contact getContact() {
+        return contact;
+    }
+
+    public void setContact(Contact contact) {
+        this.contact = contact;
+        updateTimestamp();
+    }
+
+    public List<OrderItem> getOrderLines() {
+        return orderLines;
+    }
+
+    public void setOrderLines(List<OrderItem> orderLines) {
+        this.orderLines = orderLines;
         updateTimestamp();
     }
 
@@ -56,22 +93,13 @@ public class FulfillmentOrder extends TimestableEntity {
         updateTimestamp();
     }
 
-    public List<OrderItem> getItems() {
-        return items;
-    }
-
-    public void setItems(List<OrderItem> items) {
-        this.items = items;
-        updateTimestamp();
-    }
-
-    public void addItem(OrderItem item) {
-        items.add(item);
+    public void addOrderLine(OrderItem item) {
+        orderLines.add(item);
         item.setFulfillmentOrder(this);
     }
 
-    public void removeItem(OrderItem item) {
-        items.remove(item);
+    public void removeOrderLine(OrderItem item) {
+        orderLines.remove(item);
         item.setFulfillmentOrder(null);
     }
 } 
