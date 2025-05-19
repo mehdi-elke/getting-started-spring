@@ -64,8 +64,8 @@ public class FulfillmentOrderController {
         summary = "Créer une commande de fulfillment",
         description = "Crée une nouvelle commande de fulfillment à partir d'une référence."
     )
-    public ResponseEntity<FulfillmentOrder> createOrder(@RequestBody CreateOrderRequest request) {
-        FulfillmentOrder order = fulfillmentOrderService.createOrder(request.getOrderReference());
+    public ResponseEntity<FulfillmentOrder> createOrder(@RequestBody FulfillmentOrder request) {
+        FulfillmentOrder order = fulfillmentOrderService.createOrder(request);
         return ResponseEntity.ok(order);
     }
 
@@ -115,18 +115,6 @@ public class FulfillmentOrderController {
     )
     public ResponseEntity<List<FulfillmentOrder>> getAllOrders() {
         return ResponseEntity.ok(fulfillmentOrderService.getAllOrders());
-    }
-}
-
-class CreateOrderRequest {
-    private String orderReference;
-
-    public String getOrderReference() {
-        return orderReference;
-    }
-
-    public void setOrderReference(String orderReference) {
-        this.orderReference = orderReference;
     }
 }
 

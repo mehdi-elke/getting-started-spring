@@ -44,7 +44,7 @@ public class FulfillmentOrderService {
     }
 
     @Transactional
-    public FulfillmentOrder createOrder(String orderReference) {
+    public FulfillmentOrder createOrder(FulfillmentOrder orderReference) {
         FulfillmentOrder order = new FulfillmentOrder();
         order.setStatus(FulfillmentStatus.CREATED);
         return fulfillmentOrderRepository.save(order);

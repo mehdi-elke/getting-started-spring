@@ -15,13 +15,11 @@ class FulfillmentOrderTest {
 
     private FulfillmentOrder order;
     private UUID orderId;
-    private String orderReference;
     private List<OrderItem> items;
 
     @BeforeEach
     void setUp() {
         orderId = UUID.randomUUID();
-        orderReference = "TEST-ORDER-REF";
         order = new FulfillmentOrder();
         order.setId(orderId);
         

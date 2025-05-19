@@ -201,7 +201,7 @@ class FulfillmentOrderServiceTest {
     void createOrder_ShouldCreateNewOrder() {
         when(fulfillmentOrderRepository.save(any(FulfillmentOrder.class))).thenAnswer(i -> i.getArgument(0));
 
-        FulfillmentOrder result = fulfillmentOrderService.createOrder("TEST-REF");
+        FulfillmentOrder result = fulfillmentOrderService.createOrder(new FulfillmentOrder());
 
         assertNotNull(result);
         assertEquals(FulfillmentStatus.CREATED, result.getStatus());
