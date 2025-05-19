@@ -6,5 +6,6 @@ public enum FulfillmentStatus {
     IN_PREPARATION,
     IN_DELIVERY,
     IN_TRANSIT,
-    FULFILLED
+    FULFILLED,
+    REFUSED,
 }

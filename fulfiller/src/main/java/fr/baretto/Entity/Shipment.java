@@ -1,15 +1,20 @@
 package fr.baretto.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import fr.baretto.Enumeration.FulfillmentStatus;
 import org.hibernate.annotations.CreationTimestamp;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "shipments")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Shipment extends TimestableEntity {
 
     @Id
@@ -20,7 +25,7 @@ public class Shipment extends TimestableEntity {
     private String trackingNumber;
 
     @ManyToOne
-    @JoinColumn(name = "carrier_id", nullable = false)
+    @JoinColumn(name = "carrier_id", nullable = true)
     private Carrier carrier;
 
     @ManyToOne
@@ -59,12 +64,13 @@ public class Shipment extends TimestableEntity {
     @Column(name = "carrier_code")
     private String carrierCode;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private FulfillmentStatus status;
-
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createdAt DESC")
+    private List<ShipmentIndicator> indicators = new ArrayList<>();
+
 
     public Shipment() {
         this.createdAt = LocalDateTime.now();
@@ -115,9 +121,14 @@ public class Shipment extends TimestableEntity {
         return carrierCode;
     }
 
+    @Transient
     public FulfillmentStatus getStatus() {
-        return status;
+        if (indicators == null || indicators.isEmpty()) {
+            return null;
+        }
+        return getLatestIndicator().getStatus();
     }
+
 
     public Carrier getCarrier() {
         return carrier;
@@ -172,10 +183,6 @@ public class Shipment extends TimestableEntity {
         this.carrierCode = carrierCode;
     }
 
-    public void setStatus(FulfillmentStatus status) {
-        this.status = status;
-    }
-
     public void setCarrier(Carrier carrier) {
         this.carrier = carrier;
         updateTimestamp();
@@ -188,5 +195,31 @@ public class Shipment extends TimestableEntity {
 
     public void setOrderItem(OrderItem orderItem) {
         this.orderItem = orderItem;
+    }
+
+    public List<ShipmentIndicator> getIndicators() {
+        return indicators;
+    }
+
+    public ShipmentIndicator getLatestIndicator() {
+        if (indicators == null || indicators.isEmpty()) {
+            return null;
+        }
+        return indicators.stream()
+                .filter(indicator -> indicator.getCreatedAt() != null)
+                .max((i1, i2) -> i1.getCreatedAt().compareTo(i2.getCreatedAt()))
+                .orElse(null);
+    }
+
+    public void addIndicator(ShipmentIndicator indicator) {
+        indicator.setCreatedAt(LocalDateTime.now());
+        indicator.setUpdatedAt(LocalDateTime.now());
+        this.fulfillmentOrder.setStatus(indicator.getStatus());
+        this.indicators.add(indicator);
+        indicator.setShipment(this);
+    }
+    public void removeIndicator(ShipmentIndicator indicator) {
+        this.indicators.remove(indicator);
+        indicator.setShipment(null);
     }
 }

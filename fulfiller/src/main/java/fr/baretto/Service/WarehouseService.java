@@ -1,10 +1,8 @@
 package fr.baretto.Service;
 
-import fr.baretto.Entity.FulfillmentOrder;
-import fr.baretto.Entity.OrderItem;
-import fr.baretto.Entity.Shipment;
-import fr.baretto.Entity.Warehouse;
+import fr.baretto.Entity.*;
 import fr.baretto.Enumeration.FulfillmentStatus;
+import fr.baretto.Enumeration.ShipmentEventType;
 import fr.baretto.Repository.FulfillmentOrderRepository;
 import fr.baretto.Repository.ShipmentRepository;
 import fr.baretto.Repository.WarehouseRepository;
@@ -43,10 +41,14 @@ public class WarehouseService {
             throw new FulfillmentOrderException("La commande doit être en statut VALIDATED pour commencer la préparation");
         }
 
-        order.setStatus(FulfillmentStatus.IN_PREPARATION);
         List<Shipment> shipments = shipmentRepository.findByFulfillmentOrderId(orderId);
         for (Shipment shipment : shipments) {
-            shipment.setStatus(FulfillmentStatus.IN_PREPARATION);
+            ShipmentIndicator shipmentIndicator = shipment.getLatestIndicator();
+            ShipmentIndicator newIndicator = new ShipmentIndicator();
+            newIndicator.setShipment(shipment);
+            newIndicator.setEventType(ShipmentEventType.IN_PREPARATION);
+            newIndicator.setEventDescription("Préparation de la commande en cours");
+            shipment.addIndicator(newIndicator);
             shipmentRepository.save(shipment);
         }
 
@@ -62,10 +64,14 @@ public class WarehouseService {
             throw new FulfillmentOrderException("La commande doit être en statut IN_PREPARATION pour terminer la préparation");
         }
 
-        order.setStatus(FulfillmentStatus.IN_DELIVERY);
         List<Shipment> shipments = shipmentRepository.findByFulfillmentOrderId(orderId);
         for (Shipment shipment : shipments) {
-            shipment.setStatus(FulfillmentStatus.IN_DELIVERY);
+            ShipmentIndicator shipmentIndicator = shipment.getLatestIndicator();
+            ShipmentIndicator newIndicator = new ShipmentIndicator();
+            newIndicator.setShipment(shipment);
+            newIndicator.setEventType(ShipmentEventType.IN_DELIVERY);
+            newIndicator.setEventDescription("Préparation de la commande terminée");
+            shipment.addIndicator(newIndicator);
             shipmentRepository.save(shipment);
         }
 

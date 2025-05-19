@@ -20,7 +20,6 @@ public class DeliveryAddress {
     @NotBlank
     private String country;
 
-    // Getters et Setters
     public String getZone() {
         return zone;
     }

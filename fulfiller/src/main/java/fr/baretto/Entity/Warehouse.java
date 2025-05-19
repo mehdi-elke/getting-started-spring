@@ -1,5 +1,6 @@
 package fr.baretto.Entity;
 
+import com.fasterxml.jackson.annotation.*;
 import fr.baretto.Entity.Translations.Translatable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,9 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
+
 import fr.baretto.Entity.Translations.WarehouseTranslation;
 
 @Entity
@@ -40,7 +39,7 @@ public class Warehouse implements Translatable {
     private Set<Carrier> carriers = new HashSet<>();
 
     @OneToMany(mappedBy = "warehouse", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
     private Set<WarehouseTranslation> translations = new HashSet<>();
 
     @Override

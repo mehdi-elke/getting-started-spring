@@ -69,7 +69,12 @@ class CarrierServiceTest {
         shipment.setId(UUID.randomUUID());
         shipment.setFulfillmentOrder(order);
         shipment.setCarrier(carrier);
-        shipment.setStatus(FulfillmentStatus.IN_DELIVERY);
+
+        ShipmentIndicator shipmentIndicator = new ShipmentIndicator();
+        shipmentIndicator.setId(UUID.randomUUID());
+        shipmentIndicator.setEventType(ShipmentEventType.IN_DELIVERY);
+        shipmentIndicator.setEventDescription("En cours de livraison");
+        shipment.addIndicator(shipmentIndicator);
     }
 
     @Test
@@ -133,7 +138,6 @@ class CarrierServiceTest {
 
         assertNotNull(result);
         assertEquals(shipment, result);
-        verify(shipmentIndicatorRepository).save(any(ShipmentIndicator.class));
         verify(fulfillmentOrderRepository).save(order);
         verify(shipmentRepository).save(shipment);
     }

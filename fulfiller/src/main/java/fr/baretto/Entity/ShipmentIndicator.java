@@ -1,5 +1,6 @@
 package fr.baretto.Entity;
 
+import fr.baretto.Enumeration.FulfillmentStatus;
 import fr.baretto.Enumeration.ShipmentEventType;
 import jakarta.persistence.*;
 import java.util.UUID;
@@ -44,6 +45,19 @@ public class ShipmentIndicator extends TimestableEntity {
 
     public void setEventType(ShipmentEventType eventType) {
         this.eventType = eventType;
+    }
+
+    FulfillmentStatus getStatus() {
+        return switch (this.eventType) {
+            case CREATED -> FulfillmentStatus.CREATED;
+            case VALIDATED -> FulfillmentStatus.VALIDATED;
+            case IN_TRANSIT -> FulfillmentStatus.IN_TRANSIT;
+            case IN_DELIVERY -> FulfillmentStatus.IN_DELIVERY;
+            case IN_PREPARATION -> FulfillmentStatus.IN_PREPARATION;
+            case FULFILLED -> FulfillmentStatus.FULFILLED;
+            case FAILED -> FulfillmentStatus.REFUSED;
+            default -> FulfillmentStatus.CREATED;
+        };
     }
 
     public String getEventDescription() {

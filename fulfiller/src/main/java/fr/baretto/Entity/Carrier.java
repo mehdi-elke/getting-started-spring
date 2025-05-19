@@ -1,5 +1,7 @@
 package fr.baretto.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import fr.baretto.Entity.Translations.Translatable;
 import jakarta.persistence.*;
 import java.util.HashSet;
@@ -34,11 +36,11 @@ public class Carrier implements Translatable {
         joinColumns = @JoinColumn(name = "carrier_id"),
         inverseJoinColumns = @JoinColumn(name = "warehouse_id")
     )
-    @JsonManagedReference
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
     private Set<Warehouse> includedWarehouses = new HashSet<>();
 
     @OneToMany(mappedBy = "carrier", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
     private Set<CarrierTranslation> translations = new HashSet<>();
 
     @Transient

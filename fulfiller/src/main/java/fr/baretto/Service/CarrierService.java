@@ -1,5 +1,6 @@
 package fr.baretto.Service;
 
+import fr.baretto.Controller.CreateShipmentRequest;
 import fr.baretto.Entity.Carrier;
 import fr.baretto.Entity.FulfillmentOrder;
 import fr.baretto.Entity.Shipment;
@@ -107,7 +108,6 @@ public class CarrierService {
         Shipment shipment = new Shipment();
         shipment.setFulfillmentOrder(order);
         shipment.setCarrier(carrier);
-        shipment.setStatus(FulfillmentStatus.VALIDATED);
         shipment.setTrackingNumber("TRACK-" + UUID.randomUUID().toString().substring(0, 8));
         shipment.setCurrency("EUR");
         shipment.setOrderItem(order.getOrderLines().get(0));
@@ -128,24 +128,24 @@ public class CarrierService {
         Shipment shipment = shipmentRepository.findById(shipmentId)
                 .orElseThrow(() -> new FulfillmentOrderException("Colis non trouvé"));
         
-        // Mettre à jour le statut de la commande et du shipment
         FulfillmentOrder order = shipment.getFulfillmentOrder();
         if (eventType == ShipmentEventType.FULFILLED) {
-            order.setStatus(FulfillmentStatus.FULFILLED);
-            shipment.setStatus(FulfillmentStatus.FULFILLED);
+            ShipmentIndicator newIndicator = new ShipmentIndicator();
+            newIndicator.setShipment(shipment);
+            newIndicator.setEventType(ShipmentEventType.FULFILLED);
+            newIndicator.setEventDescription(description);
+
+            shipment.addIndicator(newIndicator);
         } else {
-            order.setStatus(FulfillmentStatus.IN_DELIVERY);
-            shipment.setStatus(FulfillmentStatus.IN_DELIVERY);
+            ShipmentIndicator newIndicator = new ShipmentIndicator();
+            newIndicator.setShipment(shipment);
+            newIndicator.setEventType(eventType);
+            newIndicator.setEventDescription(description);
+            newIndicator.setEventType(ShipmentEventType.IN_TRANSIT);
+            shipment.addIndicator(newIndicator);
         }
         fulfillmentOrderRepository.save(order);
         shipment = shipmentRepository.save(shipment);
-
-        // Créer un nouvel indicateur
-        ShipmentIndicator indicator = new ShipmentIndicator();
-        indicator.setShipment(shipment);
-        indicator.setEventType(eventType);
-        indicator.setEventDescription(description);
-        shipmentIndicatorRepository.save(indicator);
 
         return shipment;
     }
@@ -153,4 +153,24 @@ public class CarrierService {
     public List<ShipmentIndicator> getShipmentHistory(UUID shipmentId) {
         return shipmentIndicatorRepository.findByShipmentId(shipmentId);
     }
-} 
+
+    public Shipment updateShipment(UUID id, CreateShipmentRequest request) {
+        Shipment s = shipmentRepository.findById(id)
+                .orElseThrow(() -> new FulfillmentOrderException("Colis non trouvé"));
+
+        if (request.getTrackingNumber() != null) s.setTrackingNumber(request.getTrackingNumber());
+        if (request.getTrackingUrl() != null) s.setTrackingUrl(request.getTrackingUrl());
+        if (request.getEstimatedPrice() != null) s.setEstimatedPrice(request.getEstimatedPrice());
+        if (request.getShippingPrice() != null) s.setShippingPrice(request.getShippingPrice());
+        if (request.getCurrency() != null) s.setCurrency(request.getCurrency());
+        if (request.getLabelUrl() != null) s.setLabelUrl(request.getLabelUrl());
+        if (request.getCarrierCode() != null) s.setCarrierCode(request.getCarrierCode());
+        if (request.getCarrier() != null) {
+            Carrier carrier = carrierRepository.findById(request.getCarrier())
+                    .orElseThrow(() -> new FulfillmentOrderException("Transporteur non trouvé"));
+            s.setCarrier(carrier);
+        }
+
+        return shipmentRepository.save(s);
+    }
+}

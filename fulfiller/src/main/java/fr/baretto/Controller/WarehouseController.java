@@ -59,8 +59,6 @@ public class WarehouseController {
         return ResponseEntity.ok(warehouses);
     }
 
-    // liste 1 entrepôt par son id ou son code
-
     @GetMapping("/{id}")
     @Operation(
         summary = "Récupérer un entrepôt",

@@ -5,6 +5,7 @@ import fr.baretto.Entity.OrderItem;
 import fr.baretto.Entity.Shipment;
 import fr.baretto.Entity.ShipmentIndicator;
 import fr.baretto.Enumeration.FulfillmentStatus;
+import fr.baretto.Enumeration.ShipmentEventType;
 import fr.baretto.Repository.FulfillmentOrderRepository;
 import fr.baretto.Repository.OrderItemRepository;
 import fr.baretto.Repository.ShipmentIndicatorRepository;
@@ -17,6 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,7 +50,33 @@ public class FulfillmentOrderService {
     @Transactional
     public FulfillmentOrder createOrder(FulfillmentOrder orderReference) {
         FulfillmentOrder order = new FulfillmentOrder();
-        order.setStatus(FulfillmentStatus.CREATED);
+        order.setCustomerId(orderReference.getCustomerId());
+        order.setDeliveryAddress(orderReference.getDeliveryAddress());
+        order.setContact(orderReference.getContact());
+
+        List<OrderItem> fixedItems = new ArrayList<>();
+        for (OrderItem item : orderReference.getOrderLines()) {
+            item.setFulfillmentOrder(order);
+            fixedItems.add(item);
+
+            Shipment shipment = new Shipment();
+            shipment.setOrderItem(item);
+            shipment.setOrderItem(item);
+            shipment.setFulfillmentOrder(order);
+            shipment.setTrackingNumber("TRK-" + UUID.randomUUID().toString());
+            item.addShipment(shipment);
+
+            ShipmentIndicator shipmentIndicator = new ShipmentIndicator();
+            shipmentIndicator.setEventType(ShipmentEventType.CREATED);
+            shipmentIndicator.setEventDescription("Création de commande");
+            shipmentIndicator.setCreatedAt(LocalDateTime.now());
+            shipmentIndicator.setUpdatedAt(LocalDateTime.now());
+            shipment.addIndicator(shipmentIndicator);
+
+            fixedItems.add(item);
+        }
+        order.setOrderLines(fixedItems);
+
         return fulfillmentOrderRepository.save(order);
     }
 
@@ -59,7 +89,16 @@ public class FulfillmentOrderService {
         if (order.getOrderLines().isEmpty()) {
             throw new FulfillmentOrderException("La commande doit contenir au moins un article pour être validée");
         }
-        order.setStatus(FulfillmentStatus.VALIDATED);
+        for (OrderItem item : order.getOrderLines()) {
+            for (Shipment shipment : item.getShipment()) {
+                ShipmentIndicator shipmentIndicator = new ShipmentIndicator();
+                shipmentIndicator.setEventType(ShipmentEventType.VALIDATED);
+                shipmentIndicator.setEventDescription("Création de commande");
+                shipmentIndicator.setCreatedAt(LocalDateTime.now());
+                shipmentIndicator.setUpdatedAt(LocalDateTime.now());
+                shipment.addIndicator(shipmentIndicator);
+            }
+        }
         return fulfillmentOrderRepository.save(order);
     }
 
@@ -74,14 +113,23 @@ public class FulfillmentOrderService {
             throw new FulfillmentOrderException("La commande doit avoir au moins un item pour être marquée comme préparée");
         }
         
-        // Vérifier que tous les articles ont un prix valide
         for (OrderItem item : items) {
             if (item.getPrice() == null || item.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
                 throw new FulfillmentOrderException("Tous les articles doivent avoir un prix valide");
             }
         }
+
+        for (OrderItem item : items) {
+            for (Shipment shipment : item.getShipment()) {
+                ShipmentIndicator shipmentIndicator = new ShipmentIndicator();
+                shipmentIndicator.setEventType(ShipmentEventType.IN_PREPARATION);
+                shipmentIndicator.setEventDescription("Préparation de la commande en cours");
+                shipmentIndicator.setCreatedAt(LocalDateTime.now());
+                shipmentIndicator.setUpdatedAt(LocalDateTime.now());
+                shipment.addIndicator(shipmentIndicator);
+            }
+        }
         
-        order.setStatus(FulfillmentStatus.IN_PREPARATION);
         return fulfillmentOrderRepository.save(order);
     }
 
@@ -92,22 +140,35 @@ public class FulfillmentOrderService {
             throw new FulfillmentOrderException("La commande doit être en statut IN_PREPARATION pour être marquée comme prête pour la livraison");
         }
         
-        // Vérifier que tous les articles ont été préparés
         List<OrderItem> items = orderItemRepository.findByFulfillmentOrderId(orderId);
         if (items.isEmpty()) {
             throw new FulfillmentOrderException("La commande doit avoir au moins un item pour être marquée comme prête pour la livraison");
         }
+
+        for (OrderItem item : items) {
+            if (item.getShipment().isEmpty()) {
+                throw new FulfillmentOrderException("Tous les articles doivent être préparés avant de marquer la commande comme prête pour la livraison");
+            }
+            for (Shipment shipment : item.getShipment()) {
+                ShipmentIndicator shipmentIndicator = new ShipmentIndicator();
+                shipmentIndicator.setEventType(ShipmentEventType.IN_DELIVERY);
+                shipmentIndicator.setEventDescription("Préparation de la commande terminée");
+                shipmentIndicator.setCreatedAt(LocalDateTime.now());
+                shipmentIndicator.setUpdatedAt(LocalDateTime.now());
+                shipment.addIndicator(shipmentIndicator);
+            }
+        }
         
-        order.setStatus(FulfillmentStatus.IN_DELIVERY);
         return fulfillmentOrderRepository.save(order);
     }
 
     @Transactional
     public OrderItem addItem(UUID orderId, String productId, int quantity, BigDecimal price) {
         FulfillmentOrder order = getOrder(orderId);
-        if (order.getStatus() == FulfillmentStatus.IN_DELIVERY || 
-            order.getStatus() == FulfillmentStatus.IN_TRANSIT || 
-            order.getStatus() == FulfillmentStatus.FULFILLED) {
+        if (
+            order.getStatus() == FulfillmentStatus.IN_TRANSIT ||
+                    order.getStatus() == FulfillmentStatus.IN_DELIVERY ||
+                    order.getStatus() == FulfillmentStatus.FULFILLED) {
             throw new FulfillmentOrderException("Impossible d'ajouter un item à une commande en cours de livraison ou livrée");
         }
 
@@ -124,10 +185,17 @@ public class FulfillmentOrderService {
             Shipment shipment = new Shipment();
             shipment.setFulfillmentOrder(order);
             shipment.setCarrier(carrier);
-            shipment.setStatus(FulfillmentStatus.VALIDATED);
             shipment.setCurrency("EUR");
             shipment.setTrackingNumber("AUTO-" + UUID.randomUUID());
             shipment.setOrderItem(item);
+
+            ShipmentIndicator shipmentIndicator = new ShipmentIndicator();
+            shipmentIndicator.setEventType(ShipmentEventType.CREATED);
+            shipmentIndicator.setEventDescription("Création de commande");
+            shipmentIndicator.setCreatedAt(LocalDateTime.now());
+            shipmentIndicator.setUpdatedAt(LocalDateTime.now());
+            shipment.addIndicator(shipmentIndicator);
+
             shipmentRepository.save(shipment);
         }
 

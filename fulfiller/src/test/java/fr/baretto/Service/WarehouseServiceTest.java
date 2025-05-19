@@ -3,7 +3,9 @@ package fr.baretto.Service;
 import fr.baretto.Entity.FulfillmentOrder;
 import fr.baretto.Entity.OrderItem;
 import fr.baretto.Entity.Shipment;
+import fr.baretto.Entity.ShipmentIndicator;
 import fr.baretto.Enumeration.FulfillmentStatus;
+import fr.baretto.Enumeration.ShipmentEventType;
 import fr.baretto.Exception.InvalidOrderStatusException;
 import fr.baretto.Exception.OrderNotFoundException;
 import fr.baretto.Repository.FulfillmentOrderRepository;
@@ -61,12 +63,21 @@ class WarehouseServiceTest {
         shipment = new Shipment();
         shipment.setId(UUID.randomUUID());
         shipment.setFulfillmentOrder(order);
-        shipment.setStatus(FulfillmentStatus.IN_PREPARATION);
+
+        ShipmentIndicator shipmentIndicator = new ShipmentIndicator();
+        shipmentIndicator.setId(UUID.randomUUID());
+        shipmentIndicator.setEventType(ShipmentEventType.IN_PREPARATION);
+        shipmentIndicator.setEventDescription("Préparation de la commande en cours");
+        shipment.addIndicator(shipmentIndicator);
 
         shipment2 = new Shipment();
         shipment2.setId(UUID.randomUUID());
         shipment2.setFulfillmentOrder(order);
-        shipment2.setStatus(FulfillmentStatus.IN_DELIVERY);
+        ShipmentIndicator shipmentIndicator2 = new ShipmentIndicator();
+        shipmentIndicator2.setId(UUID.randomUUID());
+        shipmentIndicator2.setEventType(ShipmentEventType.IN_DELIVERY);
+        shipmentIndicator2.setEventDescription("En cours de livraison");
+        shipment.addIndicator(shipmentIndicator);
 
         items = new ArrayList<>();
         OrderItem item = new OrderItem();

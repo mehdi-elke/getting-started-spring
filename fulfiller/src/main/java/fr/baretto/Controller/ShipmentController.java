@@ -68,7 +68,7 @@ public class ShipmentController {
         @RequestBody CreateShipmentRequest request) {
         Shipment shipment = carrierService.createShipment(
             request.getFulfillmentOrderId(),
-            request.getCarrierId()
+            request.getCarrier()
         );
         return ResponseEntity.ok(shipment);
     }
@@ -98,6 +98,18 @@ public class ShipmentController {
         return ResponseEntity.ok(indicators);
     }
 
+    @PutMapping("/{id}")
+    @Operation(
+        summary = "Mettre à jour un Shipment",
+        description = "Met à jour les informations d'un Shipment."
+    )
+    public ResponseEntity<Shipment> updateShipment(
+        @Parameter(description = "UUID du Shipment") @PathVariable UUID id,
+        @RequestBody CreateShipmentRequest request) {
+        Shipment shipment = carrierService.updateShipment(id, request);
+        return ResponseEntity.ok(shipment);
+    }
+
     @GetMapping()
     @Operation(
         summary = "Récupérer toutes les expéditions avec leurs données complètes",
@@ -105,45 +117,6 @@ public class ShipmentController {
     )
     public ResponseEntity<List<Shipment>> getAllShipmentsWithDetails() {
         return ResponseEntity.ok(shipmentService.getAllShipments());
-    }
-}
-
-class CreateShipmentRequest {
-    private UUID fulfillmentOrderId;
-    private UUID carrierId;
-    private String trackingNumber;
-    private String currency;
-
-    public UUID getFulfillmentOrderId() {
-        return fulfillmentOrderId;
-    }
-
-    public void setFulfillmentOrderId(UUID fulfillmentOrderId) {
-        this.fulfillmentOrderId = fulfillmentOrderId;
-    }
-
-    public UUID getCarrierId() {
-        return carrierId;
-    }
-
-    public void setCarrierId(UUID carrierId) {
-        this.carrierId = carrierId;
-    }
-
-    public String getTrackingNumber() {
-        return trackingNumber;
-    }
-
-    public void setTrackingNumber(String trackingNumber) {
-        this.trackingNumber = trackingNumber;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
     }
 }
 

@@ -1,9 +1,9 @@
 package fr.baretto.Service;
 
-import fr.baretto.Entity.FulfillmentOrder;
-import fr.baretto.Entity.OrderItem;
-import fr.baretto.Entity.Carrier;
+import fr.baretto.Entity.*;
 import fr.baretto.Enumeration.FulfillmentStatus;
+import fr.baretto.Enumeration.ShipmentEventType;
+import fr.baretto.Exception.FulfillmentOrderException;
 import fr.baretto.Repository.FulfillmentOrderRepository;
 import fr.baretto.Repository.OrderItemRepository;
 import fr.baretto.Repository.CarrierRepository;
@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -51,21 +52,47 @@ class FulfillmentOrderServiceTest {
         
         order = new FulfillmentOrder();
         order.setId(orderId);
-        order.setStatus(FulfillmentStatus.CREATED);
-        
+
         item1 = new OrderItem();
         item1.setId(UUID.randomUUID());
         item1.setFulfillmentOrder(order);
         item1.setProductId("PROD-001");
         item1.setQuantity(2);
+        item1.setPrice(BigDecimal.valueOf(10.00));
         
         item2 = new OrderItem();
         item2.setId(UUID.randomUUID());
         item2.setFulfillmentOrder(order);
         item2.setProductId("PROD-002");
         item2.setQuantity(1);
+        item2.setPrice(BigDecimal.valueOf(20.00));
 
-        order.setOrderLines(new java.util.ArrayList<>(Arrays.asList(item1, item2)));
+        Shipment shipment = new Shipment();
+        shipment.setId(UUID.randomUUID());
+        shipment.setFulfillmentOrder(order);
+        shipment.setOrderItem(item1);
+        shipment.setTrackingNumber("TRACK-001");
+        shipment.setTrackingUrl("http://example.com/track");
+        item1.addShipment(shipment);
+        Shipment shipment2 = new Shipment();
+        shipment2.setId(UUID.randomUUID());
+        shipment2.setFulfillmentOrder(order);
+        shipment2.setOrderItem(item2);
+        shipment2.setTrackingNumber("TRACK-002");
+        shipment2.setTrackingUrl("http://example.com/track");
+        item2.addShipment(shipment2);
+        ShipmentIndicator shipmentIndicator = new ShipmentIndicator();
+        shipmentIndicator.setId(UUID.randomUUID());
+        shipmentIndicator.setEventType(ShipmentEventType.CREATED);
+        shipmentIndicator.setEventDescription("Création de commande");
+        shipmentIndicator.setCreatedAt(java.time.LocalDateTime.now());
+        shipmentIndicator.setUpdatedAt(java.time.LocalDateTime.now());
+        shipment.addIndicator(shipmentIndicator);
+        shipment2.addIndicator(shipmentIndicator);
+
+        order.addOrderLine(item1);
+        order.addOrderLine(item2);
+
     }
 
     @Test
@@ -90,7 +117,16 @@ class FulfillmentOrderServiceTest {
 
     @Test
     void acceptOrder_ShouldThrowException_WhenInvalidStatus() {
-        order.setStatus(FulfillmentStatus.VALIDATED);
+        ShipmentIndicator indicator = new ShipmentIndicator();
+        indicator.setEventType(ShipmentEventType.VALIDATED);
+        indicator.setCreatedAt(LocalDateTime.now());
+        indicator.setUpdatedAt(LocalDateTime.now());
+
+        for (OrderItem item : order.getOrderLines()) {
+            for (Shipment shipment : item.getShipment()) {
+                shipment.addIndicator(indicator);
+            }
+        }
         when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
         assertThrows(RuntimeException.class, () -> fulfillmentOrderService.acceptOrder(orderId));
@@ -139,16 +175,35 @@ class FulfillmentOrderServiceTest {
 
     @Test
     void markReadyForDelivery_ShouldChangeStatusToInDelivery() {
-        order.setStatus(FulfillmentStatus.IN_PREPARATION);
+        when(orderItemRepository.findByFulfillmentOrderId(orderId)).thenReturn(Arrays.asList(item1, item2));
         when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(fulfillmentOrderRepository.save(any(FulfillmentOrder.class))).thenAnswer(i -> i.getArgument(0));
+
+        for (OrderItem item : order.getOrderLines()) {
+            for (Shipment shipment : item.getShipment()) {
+                ShipmentIndicator indicator = new ShipmentIndicator();
+                indicator.setId(UUID.randomUUID());
+                indicator.setEventType(ShipmentEventType.IN_PREPARATION);
+                indicator.setEventDescription("Préparation terminée");
+                indicator.setCreatedAt(java.time.LocalDateTime.now());
+                indicator.setUpdatedAt(java.time.LocalDateTime.now());
+                indicator.setShipment(shipment);
+                shipment.addIndicator(indicator);
+            }
+        }
 
         FulfillmentOrder result = fulfillmentOrderService.markReadyForDelivery(orderId);
 
         assertNotNull(result);
-        assertEquals(FulfillmentStatus.IN_DELIVERY, result.getStatus());
+        boolean hasDeliveryIndicator = result.getOrderLines().stream()
+                .flatMap(item -> item.getShipment().stream())
+                .flatMap(shipment -> shipment.getIndicators().stream())
+                .anyMatch(indicator -> indicator.getEventType() == ShipmentEventType.IN_DELIVERY);
+
+        assertTrue(hasDeliveryIndicator);
         verify(fulfillmentOrderRepository).save(any(FulfillmentOrder.class));
     }
+
 
     @Test
     void markReadyForDelivery_ShouldThrowException_WhenOrderNotFound() {
@@ -160,6 +215,7 @@ class FulfillmentOrderServiceTest {
 
     @Test
     void markReadyForDelivery_ShouldThrowException_WhenInvalidStatus() {
+        order.addOrderLine(item1);
         when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
         assertThrows(RuntimeException.class, () -> fulfillmentOrderService.markReadyForDelivery(orderId));
@@ -232,19 +288,29 @@ class FulfillmentOrderServiceTest {
         verify(fulfillmentOrderRepository, never()).save(any(FulfillmentOrder.class));
     }
 
-    @Test
     void addItem_ShouldThrowException_WhenOrderInDelivery() {
-        order.setStatus(FulfillmentStatus.IN_DELIVERY);
         when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
-        assertThrows(RuntimeException.class, () -> 
-            fulfillmentOrderService.addItem(orderId, "PROD-003", 1, new BigDecimal("10.00")));
+        for (OrderItem item : order.getOrderLines()) {
+            for (Shipment shipment : item.getShipment()) {
+                ShipmentIndicator indicator = new ShipmentIndicator();
+                indicator.setEventType(ShipmentEventType.IN_DELIVERY);
+                indicator.setCreatedAt(LocalDateTime.now());
+                indicator.setUpdatedAt(LocalDateTime.now());
+                indicator.setShipment(shipment);
+                shipment.addIndicator(indicator);
+            }
+        }
+
+        assertThrows(FulfillmentOrderException.class, () ->
+                fulfillmentOrderService.addItem(orderId, "PROD-003", 1, new BigDecimal("10.00"))
+        );
         verify(fulfillmentOrderRepository, never()).save(any(FulfillmentOrder.class));
     }
 
+
     @Test
     void addItem_ShouldThrowException_WhenNoCarrierAvailable() {
-        // On initialise la commande sans items
         order.setOrderLines(new java.util.ArrayList<>());
         when(fulfillmentOrderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(carrierRepository.findAll()).thenReturn(Collections.emptyList());

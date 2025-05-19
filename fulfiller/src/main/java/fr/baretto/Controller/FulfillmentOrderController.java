@@ -96,7 +96,7 @@ public class FulfillmentOrderController {
         );
         return ResponseEntity.ok(item);
     }
-    // Récuperer les orderitems par une commande
+
     @GetMapping("/{id}/items")
     @Operation(
         summary = "Récupérer les items d'une commande",

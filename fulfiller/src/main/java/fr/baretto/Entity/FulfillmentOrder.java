@@ -39,7 +39,6 @@ public class FulfillmentOrder extends TimestableEntity {
     @Column(nullable = false)
     private FulfillmentStatus status = FulfillmentStatus.CREATED;
 
-    // Getters et Setters
     public UUID getId() {
         return id;
     }

@@ -33,12 +33,7 @@ public class OrderItem {
     @JoinColumn(name = "fulfillment_order_id", nullable = false)
     private FulfillmentOrder fulfillmentOrder;
 
-    @ManyToMany
-    @JoinTable(
-        name = "order_item_shipments",
-        joinColumns = @JoinColumn(name = "order_item_id"),
-        inverseJoinColumns = @JoinColumn(name = "shipment_id")
-    )
+    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Shipment> shipments = new HashSet<>();
 
     public OrderItem() {
