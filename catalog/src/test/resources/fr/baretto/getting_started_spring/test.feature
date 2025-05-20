@@ -8,3 +8,12 @@ Feature: product integraiton test
     Given a productRequestDto with name "kohaku", description "le chat de thémis", and price 10
     When we send POST "/product" with this productRequestDto
     Then we receive a product with name "kohaku"
+    Then we call "/product"
+    Then we receive a status OK and:
+        """
+        [{
+          "name":"kohaku",
+          "description":"le chat de thémis",
+          "price":10.0
+        }]
+        """
