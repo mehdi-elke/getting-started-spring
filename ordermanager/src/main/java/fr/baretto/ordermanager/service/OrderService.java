@@ -12,9 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class OrderService {
@@ -28,7 +26,7 @@ public class OrderService {
     // Vérification du stock via Inventory Service.
     // Retourne directement un OrderResponse avec un message d’erreur si le stock est insuffisant.
     public OrderResponse validateOrder(OrderRequest request) {
-        boolean stockAvailable = checkInventory(request.getOrderDetails(), request.getDeliveryZone());
+        boolean stockAvailable = checkInventory(request.getOrderDetailToString(), request.getZone());
 
         if (!stockAvailable) {
             return new OrderResponse("Stock insuffisant ou zone de livraison invalide.");
@@ -40,10 +38,9 @@ public class OrderService {
         order.setStatus(OrderStatus.CREATED);
         order.setCreationDate(new Date());
         order.setContact(new Contact(request.getEmail(), request.getPhoneNumber()));
-        order.setAddress(request.getAddress());
-        order.setDeliveryZone(request.getDeliveryZone());
-        order.setDeliveryMethod(request.getDeliveryMethod());
-        order.setOrderDetails(request.getOrderDetails());
+        order.setAddress(request.getAddressString());
+        order.setDeliveryZone(request.getZone());
+        order.setOrderDetails(request.getOrderDetailToString());
         order.setPaymentMethod(request.getPaymentMethod());
         order.setOrderTracking(request.getOrderTracking());
 
@@ -86,9 +83,67 @@ public class OrderService {
             ResponseEntity<Boolean> response = restTemplate.postForEntity(url, paymentRequest, Boolean.class);
             return response.getBody() != null && response.getBody();
         } catch (Exception e) {
+            return true;
+        }
+    }
+
+    public boolean processOrder(OrderRequest order) {
+
+        // Construction de l'objet à envoyer
+        Map<String, Object> fulfillmentRequest = new HashMap<>();
+        fulfillmentRequest.put("customerId", order.getCustomerId());
+
+        Map<String, String> deliveryAddress = new HashMap<>();
+        deliveryAddress.put("zone", order.getZone());
+        deliveryAddress.put("street", order.getDeliveryAddress().getStreet());
+        deliveryAddress.put("city", order.getDeliveryAddress().getCity());
+        deliveryAddress.put("postalCode", order.getDeliveryAddress().getPostalCode());
+        deliveryAddress.put("country", order.getDeliveryAddress().getCountry());
+        fulfillmentRequest.put("deliveryAddress", deliveryAddress);
+
+        Map<String, String> contact = new HashMap<>();
+        contact.put("email", order.getEmail());
+        contact.put("phoneNumber", order.getPhoneNumber());
+        fulfillmentRequest.put("contact", contact);
+
+        List<Map<String, Object>> orderLines = new ArrayList<>();
+        for (int i = 0; i < order.getOrderDetails().size(); i++) {
+            Map<String, Object> orderLine = new HashMap<>();
+            orderLine.put("productId", order.getOrderDetails().get(i).getProductReference());
+            orderLine.put("quantity", order.getOrderDetails().get(i).getQuantity()); // Exemple
+            orderLine.put("price", order.getOrderDetails().get(i).getPrice());
+
+            Map<String, Object> shipment = new HashMap<>();
+            for (int j = 0; j < order.getOrderDetails().get(i).getShipment().size(); j++) {
+                shipment.put("trackingNumber", order.getOrderDetails().get(i).getShipment().get(j).getTrackingNumber());
+                List<Map<String, String>> indicators = new ArrayList<>();
+                for (int k = 0; k < order.getOrderDetails().get(i).getShipment().get(j).getIndicators().size(); k++) {
+                    Map<String, String> indicator = new HashMap<>();
+                    indicator.put("eventType", order.getOrderDetails().get(i).getShipment().get(j).getIndicators().get(k).getEventType());
+                    indicator.put("eventDescription", order.getOrderDetails().get(i).getShipment().get(j).getIndicators().get(k).getEventDescription());
+                    indicators.add(indicator);
+                }
+                shipment.put("indicators", indicators);
+            }
+            orderLine.put("shipment", shipment);
+
+            orderLines.add(orderLine);
+        }
+
+        fulfillmentRequest.put("orderLines", orderLines);
+
+        System.out.printf(fulfillmentRequest.toString());
+
+        // Envoi de la requête
+        String url = "http://localhost:8081/fullfilment";
+        try {
+            ResponseEntity<Boolean> response = restTemplate.postForEntity(url, fulfillmentRequest, Boolean.class);
+            return response.getBody() != null && response.getBody();
+        } catch (Exception e) {
             return false;
         }
     }
+
 
     public Optional<Order> getOrderById(String orderId) {
         return orderRepository.findByOrderId(orderId);
