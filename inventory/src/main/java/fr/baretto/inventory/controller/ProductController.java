@@ -17,20 +17,8 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable("id") Long id) {
-        return productService.getProductById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public Product addProduct(@RequestBody ProductDto product) {
-        return productService.addProduct(product);
+    public List<Product> getAllProductsFromCatalog() {
+        return productService.getAllProductsFromCatalog();
     }
 
     @DeleteMapping("/{id}")
