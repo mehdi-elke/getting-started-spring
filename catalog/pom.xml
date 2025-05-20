@@ -58,6 +58,14 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>com.decathlon.tzatziki</groupId>
+			<artifactId>tzatziki-spring</artifactId>
+			<version>1.8.4</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
