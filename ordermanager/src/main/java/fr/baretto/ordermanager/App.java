@@ -1,5 +1,6 @@
 package fr.baretto.ordermanager;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.baretto.ordermanager.dto.*;
 import fr.baretto.ordermanager.model.OrderStatus;
 import fr.baretto.ordermanager.service.OrderService;
@@ -8,6 +9,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.List;
+import java.util.UUID;
 
 @SpringBootApplication
 public class App implements CommandLineRunner {
@@ -23,7 +25,7 @@ public class App implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) {
+    public void run(String... args) throws JsonProcessingException {
         System.out.println("Application démarrée avec succès");
 
         DeliveryAddress deliveryAddress = new DeliveryAddress();
@@ -33,11 +35,17 @@ public class App implements CommandLineRunner {
         deliveryAddress.setZone("77");
         deliveryAddress.setCountry("France");
 
-        OrderLineDTO orderLineDTO = new OrderLineDTO();
-        orderLineDTO.setProductId("123456");
-        orderLineDTO.setQuantity(1);
-        orderLineDTO.setPrice(100.0);
-        orderLineDTO.setProductReference("DELL-XPS-13");
+        OrderLineDTO orderLineDTO1 = new OrderLineDTO();
+        orderLineDTO1.setProductId("123456");
+        orderLineDTO1.setQuantity(2); // Exemple : 2 unités
+        orderLineDTO1.setPrice(100.0); // Exemple : 100€ par unité
+        orderLineDTO1.setProductReference("DELL-XPS-13");
+
+        OrderLineDTO orderLineDTO2 = new OrderLineDTO();
+        orderLineDTO2.setProductId("789012");
+        orderLineDTO2.setQuantity(1); // Exemple : 1 unité
+        orderLineDTO2.setPrice(50.0); // Exemple : 50€ par unité
+        orderLineDTO2.setProductReference("LOGITECH-MOUSE");
 
         ShipmentDTO shipmentDTO = new ShipmentDTO();
         shipmentDTO.setTrackingNumber("CHR094396875849");
@@ -45,26 +53,23 @@ public class App implements CommandLineRunner {
         indicatorDTO.setEventType("CREATED");
         indicatorDTO.setEventDescription("Commande créée");
 
-        IndicatorDTO indicatorDTO2 = new IndicatorDTO();
-        indicatorDTO2.setEventType("VALIDATED");
-        indicatorDTO2.setEventDescription("Commande validée");
-
-        IndicatorDTO indicatorDTO3 = new IndicatorDTO();
-        indicatorDTO3.setEventType("IN_PREPARATION");
-        indicatorDTO3.setEventDescription("Commande en préparation");
-        shipmentDTO.setIndicators(List.of(indicatorDTO, indicatorDTO2, indicatorDTO3));
-
-        orderLineDTO.setShipment(List.of(shipmentDTO));
-        orderLineDTO.setProductReference("DELL-XPS-13");
-
+        shipmentDTO.setIndicators(List.of(indicatorDTO));
+        orderLineDTO1.setShipment(List.of(shipmentDTO));
+        orderLineDTO2.setShipment(List.of(shipmentDTO));
 
         OrderRequest orderRequest = new OrderRequest();
         orderRequest.setEmail("alice.dupont@example.com");
         orderRequest.setPhoneNumber("0612345678");
         orderRequest.setDeliveryAddress(deliveryAddress);
-        orderRequest.setOrderDetails(List.of(orderLineDTO));
+        orderRequest.setOrderDetails(List.of(orderLineDTO1, orderLineDTO2));
         orderRequest.setOrderTracking("CHR094396875849");
+        orderRequest.setCustomerId(UUID.randomUUID().toString());
         orderRequest.setPaymentMethod("Carte bancaire");
+
+        // Calcul du montant total
+        double totalAmount = orderRequest.getOrderDetails().stream()
+                .mapToDouble(orderLine -> orderLine.getPrice() * orderLine.getQuantity())
+                .sum();
 
         // Validation de la commande
         OrderResponse orderResponse = orderService.validateOrder(orderRequest);
@@ -74,8 +79,9 @@ public class App implements CommandLineRunner {
             // Création de la requête de paiement
             PaymentRequest paymentRequest = new PaymentRequest();
             paymentRequest.setOrderId(orderResponse.getOrderId());
-            paymentRequest.setAmount(100.0);
+            paymentRequest.setAmount(totalAmount); // Montant total calculé
             paymentRequest.setPaymentMethod("Carte bancaire");
+            System.out.println("Montant total de la commande : " + totalAmount);
 
             // Validation du paiement
             OrderResponse paymentResponse = orderService.payOrder(paymentRequest);
