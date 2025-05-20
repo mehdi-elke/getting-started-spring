@@ -90,8 +90,8 @@ public class OrderItem {
         return productId;
     }
 
-    public List<Shipment> getShipment() {
-        return new java.util.ArrayList<>(shipments);
+    public Set<Shipment> getShipment() {
+        return shipments;
     }
 
     public void addShipment(Shipment shipment) {

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,6 +66,19 @@ public class GlobalExceptionHandler {
         body.put("exception", ex.getClass().getSimpleName());
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    // for ConcurrentModificationException
+    @ExceptionHandler(ConcurrentModificationException.class)
+    public ResponseEntity<Map<String, Object>> handleConcurrentModificationException(ConcurrentModificationException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("error", "Conflict");
+        body.put("message", ex.getMessage());
+        body.put("exception", ex.getClass().getSimpleName());
+
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
 

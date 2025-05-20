@@ -55,30 +55,49 @@ public class FulfillmentOrderService {
         order.setContact(orderReference.getContact());
 
         List<OrderItem> fixedItems = new ArrayList<>();
+
         for (OrderItem item : orderReference.getOrderLines()) {
             item.setFulfillmentOrder(order);
-            fixedItems.add(item);
 
-            Shipment shipment = new Shipment();
-            shipment.setOrderItem(item);
-            shipment.setOrderItem(item);
-            shipment.setFulfillmentOrder(order);
-            shipment.setTrackingNumber("TRK-" + UUID.randomUUID().toString());
-            item.addShipment(shipment);
+            if (item.getShipment() != null && !item.getShipment().isEmpty()) {
+                for (Shipment shipment : item.getShipment()) {
+                    shipment.setOrderItem(item);
+                    shipment.setFulfillmentOrder(order);
 
-            ShipmentIndicator shipmentIndicator = new ShipmentIndicator();
-            shipmentIndicator.setEventType(ShipmentEventType.CREATED);
-            shipmentIndicator.setEventDescription("Création de commande");
-            shipmentIndicator.setCreatedAt(LocalDateTime.now());
-            shipmentIndicator.setUpdatedAt(LocalDateTime.now());
-            shipment.addIndicator(shipmentIndicator);
+                    if (shipment.getIndicators() != null) {
+                        List<ShipmentIndicator> indicatorsToAttach = new ArrayList<>(shipment.getIndicators());
+                        shipment.getIndicators().clear();
+
+                        for (ShipmentIndicator indicator : indicatorsToAttach) {
+                            shipment.addIndicator(indicator);
+                        }
+                    }
+
+                    item.addShipment(shipment);
+                }
+            } else {
+                Shipment shipment = new Shipment();
+                shipment.setTrackingNumber("TRK-" + UUID.randomUUID());
+                shipment.setOrderItem(item);
+                shipment.setFulfillmentOrder(order);
+
+                ShipmentIndicator indicator = new ShipmentIndicator();
+                indicator.setEventType(ShipmentEventType.CREATED);
+                indicator.setEventDescription("Création de commande");
+
+                shipment.addIndicator(indicator);
+                item.addShipment(shipment);
+            }
 
             fixedItems.add(item);
         }
+
         order.setOrderLines(fixedItems);
 
         return fulfillmentOrderRepository.save(order);
     }
+
+
 
     @Transactional
     public FulfillmentOrder acceptOrder(UUID orderId) {
