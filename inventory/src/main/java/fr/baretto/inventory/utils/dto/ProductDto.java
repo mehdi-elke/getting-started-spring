@@ -11,5 +11,8 @@ public class ProductDto {
     private Long id;
     @NonNull
     @NotEmpty
+    private String uuid;
+    @NonNull
+    @NotEmpty
     private String name;    
 }
