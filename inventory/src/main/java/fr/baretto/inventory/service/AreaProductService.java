@@ -1,6 +1,7 @@
 package fr.baretto.inventory.service;
 
 import fr.baretto.inventory.dao.model.AreaProduct;
+import fr.baretto.inventory.dao.repository.AreaProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
