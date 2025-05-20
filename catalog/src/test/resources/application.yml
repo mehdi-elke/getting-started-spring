@@ -2,7 +2,7 @@ spring:
   application:
     name: getting-started-spring
   datasource:
-    url: jdbc:postgresql://localhost:5432/mydb
+    url: jdbc:postgresql://localhost:5432/testdb
     username: user
     password: pass
   jpa:
