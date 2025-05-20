@@ -27,10 +27,16 @@ public class PaymentRequest {
     @NotNull(message = "La méthode de paiement est obligatoire")
     private PaymentMethod paymentMethod;
 
-    // Informations spécifiques au paiement (simulées)
+    // Informations spécifiques à la carte bancaire
     private String cardNumber;
     private String cardHolderName;
     private String expiryDate;
     private String cvv;
+
+    // Informations spécifiques à PayPal
     private String paypalEmail;
+
+    // Informations spécifiques au virement bancaire
+    private String iban;
+    private String accountHolderName;
 }
