@@ -19,8 +19,9 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public Product createProduct(ProductRequestDto productRequest){
-        Product product = new Product(productRequest.getName(), productRequest.getDescription(), productRequest.getPrice());
+    public Product createProduct(ProductRequestDto productRequest) {
+        Product product = new Product(productRequest.getName(), productRequest.getDescription(),
+                productRequest.getPrice());
         return productRepository.save(product);
     }
 
@@ -33,16 +34,16 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    public boolean deleteProduct(UUID productId){
+    public boolean deleteProduct(UUID productId) {
         try {
             productRepository.deleteById(productId);
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
     }
 
-    public Product updateProduct(UUID productId, ProductRequestDto productRequestDto){
+    public Product updateProduct(UUID productId, ProductRequestDto productRequestDto) {
         Optional<Product> optProduct = productRepository.findById(productId);
         if (optProduct.isPresent()) {
             Product product = optProduct.get();
@@ -55,5 +56,3 @@ public class ProductService {
         }
     }
 }
-
-
