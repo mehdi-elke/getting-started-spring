@@ -77,7 +77,7 @@ public class OrderService {
             return new OrderResponse("Paiement refusé ou problème technique lors du paiement.");
         }
         order.setStatus(OrderStatus.VALIDATED);
-        order.setPaymentMethod(paymentRequest.getPaymentMethod());
+        order.setPaymentMethod(paymentRequest.getPaymentMethod().toString());
 
         orderRepository.save(order);
         return new OrderResponse(order.getOrderId(), order.getStatus(), order.getCreationDate());
@@ -86,14 +86,24 @@ public class OrderService {
     private boolean processPayment(PaymentRequest paymentRequest) {
         String url = "http://localhost:8083/payment/process";
         try {
-            ResponseEntity<Boolean> response = restTemplate.postForEntity(url, paymentRequest, Boolean.class);
-            return response.getBody() != null && response.getBody();
+            ObjectMapper objectMapper = new ObjectMapper();
+            String json = objectMapper.writeValueAsString(paymentRequest);
+            System.out.println(json);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(url, paymentRequest, String.class);
+            return true;
         } catch (Exception e) {
+            log.error("e: ", new RuntimeException("Erreur lors du paiement de la commande", e));
             return false;
         }
     }
 
-    public boolean processOrder(OrderRequest order) throws JsonProcessingException {
+    public boolean processOrder(OrderRequest order, PaymentRequest paymentRequest) throws JsonProcessingException {
+        Optional<Order> optionalOrder = orderRepository.findByOrderId(paymentRequest.getOrderId());
+        Order orderVrai = optionalOrder.get();
 
         // Construction de l'objet à envoyer
         Map<String, Object> fulfillmentRequest = new HashMap<>();
@@ -148,6 +158,7 @@ public class OrderService {
             System.out.println("Réponse brute : " + response.getBody());
             if (response.getStatusCode().is2xxSuccessful()) {
                 System.out.println("Requête envoyée avec succès");
+                orderVrai.setStatus(OrderStatus.IN_PREPARATION);
                 return true;
             } else {
                 System.err.println("Erreur lors de l'envoi de la requête : " + response.getStatusCode());

@@ -1,6 +1,7 @@
 package fr.baretto.ordermanager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import fr.baretto.ordermanager.controller.PaymentMethod;
 import fr.baretto.ordermanager.dto.*;
 import fr.baretto.ordermanager.model.OrderStatus;
 import fr.baretto.ordermanager.service.OrderService;
@@ -80,7 +81,7 @@ public class App implements CommandLineRunner {
             PaymentRequest paymentRequest = new PaymentRequest();
             paymentRequest.setOrderId(orderResponse.getOrderId());
             paymentRequest.setAmount(totalAmount); // Montant total calculé
-            paymentRequest.setPaymentMethod("Carte bancaire");
+            paymentRequest.setPaymentMethod(PaymentMethod.APPLE_PAY);
             System.out.println("Montant total de la commande : " + totalAmount);
 
             // Validation du paiement
@@ -92,6 +93,7 @@ public class App implements CommandLineRunner {
                 boolean processSuccess = orderService.processOrder(orderRequest);
                 if (processSuccess) {
                     System.out.println("Commande traitée avec succès : " + paymentResponse.getOrderId());
+
                 } else {
                     System.out.println("Erreur lors du traitement de la commande : " + paymentResponse.getOrderId());
                 }
