@@ -11,7 +11,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update      # Crée ou met à jour les tables
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true

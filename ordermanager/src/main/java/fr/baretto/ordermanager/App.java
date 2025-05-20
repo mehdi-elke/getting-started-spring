@@ -26,8 +26,8 @@ public class App implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws JsonProcessingException {
-        System.out.println("Application démarrée avec succès");
+    public void run(String... args) throws JsonProcessingException, InterruptedException {
+        System.out.println("🚀 Application démarrée avec succès");
 
         DeliveryAddress deliveryAddress = new DeliveryAddress();
         deliveryAddress.setStreet("12 rue Lafayette");
@@ -75,25 +75,26 @@ public class App implements CommandLineRunner {
         // Validation de la commande
         OrderResponse orderResponse = orderService.validateOrder(orderRequest);
         if (orderResponse.getOrderId() != null) {
-            System.out.println("Commande créée avec succès : " + orderResponse.getOrderId());
+            System.out.println("✅ Commande créée avec succès : " + orderResponse.getOrderId());
 
             // Création de la requête de paiement
             PaymentRequest paymentRequest = new PaymentRequest();
             paymentRequest.setOrderId(orderResponse.getOrderId());
             paymentRequest.setAmount(totalAmount); // Montant total calculé
             paymentRequest.setPaymentMethod(PaymentMethod.APPLE_PAY);
-            System.out.println("Montant total de la commande : " + totalAmount);
+            System.out.println("💰 Montant total de la commande : " + totalAmount);
 
             // Validation du paiement
             OrderResponse paymentResponse = orderService.payOrder(paymentRequest);
             if (paymentResponse.getStatus() == OrderStatus.VALIDATED) {
-                System.out.println("Paiement validé pour la commande : " + paymentResponse.getOrderId());
+                System.out.println("🎉 Paiement validé pour la commande : " + paymentResponse.getOrderId());
 
                 // Traitement de la commande
-                boolean processSuccess = orderService.processOrder(orderRequest);
+                boolean processSuccess = orderService.processOrder(orderRequest, paymentRequest);
                 if (processSuccess) {
-                    System.out.println("Commande traitée avec succès : " + paymentResponse.getOrderId());
+                    System.out.println("📦 Commande pris en compte avec succès : " + paymentResponse.getOrderId());
 
+                    orderService.simuleCommand(paymentRequest);
                 } else {
                     System.out.println("Erreur lors du traitement de la commande : " + paymentResponse.getOrderId());
                 }
