@@ -1,4 +1,5 @@
 package fr.baretto.inventory.controller;
+import fr.baretto.inventory.utils.dto.AreaDto;
 
 
 import fr.baretto.inventory.dao.model.Area;
@@ -28,37 +29,41 @@ public class ControllerArea {
     private ServiceArea serviceArea;
 
     @GetMapping("/all")
-    public ResponseEntity<List<Area>> getAllAreas() {
-        List<Area> areas = serviceArea.getAllAreas();
+    public ResponseEntity<List<AreaDto>> getAllAreas() {
+        List<AreaDto> areas = serviceArea.getAllAreas();
         return new ResponseEntity<>(areas, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Area> getAreaById(@PathVariable("id") Long id) {
-        Area area = serviceArea.getAreaById(id);
+    public ResponseEntity<AreaDto> getAreaById(@PathVariable("id") Long id) {
+        AreaDto area = serviceArea.getAreaById(id);
         return new ResponseEntity<>(area, HttpStatus.OK);
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Area> addArea(@RequestBody Area area) {
-        Area createdArea = serviceArea.addArea(area);
-        return new ResponseEntity<>(createdArea, HttpStatus.CREATED);
+    public ResponseEntity<?> addArea(@RequestBody AreaDto area) {
+        try {
+            AreaDto createdArea = serviceArea.addArea(area);
+            return new ResponseEntity<>(createdArea, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Area> updateArea(@PathVariable Long id, @RequestBody Area area) {
-        Area updatedArea = serviceArea.updateArea(id, area);
+    public ResponseEntity<AreaDto> updateArea(@PathVariable("id") Long id, @RequestBody AreaDto area) {
+        AreaDto updatedArea = serviceArea.updateArea(id, area);
         return new ResponseEntity<>(updatedArea, HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteArea(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteArea(@PathVariable("id") Long id) {
         serviceArea.deleteArea(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
     @GetMapping("/search")
-    public ResponseEntity<List<Area>> searchAreas(@RequestParam String name) {
-        List<Area> areas = serviceArea.searchAreas(name);
+    public ResponseEntity<List<AreaDto>> searchAreas(@RequestParam String name) {
+        List<AreaDto> areas = serviceArea.searchAreas(name);
         return new ResponseEntity<>(areas, HttpStatus.OK);
 
     } 
