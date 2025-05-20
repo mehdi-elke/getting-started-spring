@@ -86,19 +86,30 @@ public class OrderService {
     private boolean processPayment(PaymentRequest paymentRequest) {
         String url = "http://localhost:8083/payment/process";
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            String json = objectMapper.writeValueAsString(paymentRequest);
-            System.out.println(json);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        try {
-            ResponseEntity<String> response = restTemplate.postForEntity(url, paymentRequest, String.class);
+            restTemplate.postForEntity(url, paymentRequest, String.class);
             return true;
         } catch (Exception e) {
             log.error("e: ", new RuntimeException("Erreur lors du paiement de la commande", e));
             return false;
         }
+    }
+
+    public void simuleCommand(PaymentRequest paymentRequest) throws InterruptedException {
+        Optional<Order> optionalOrder = orderRepository.findByOrderId(paymentRequest.getOrderId());
+        Order orderVrai = optionalOrder.get();
+
+        orderVrai.setStatus(OrderStatus.IN_PREPARATION);
+        System.out.println("📦 Votre colis est en préparation...");
+
+        Thread.sleep(2000); // 2 secondes
+
+        orderVrai.setStatus(OrderStatus.IN_DELIVERY);
+        System.out.println("🚚 Votre colis est en cours de livraison...");
+
+        Thread.sleep(2000); // 2 secondes
+
+        orderVrai.setStatus(OrderStatus.FULFILLED);
+        System.out.println("✅ Votre colis a été livré avec succès !");
     }
 
     public boolean processOrder(OrderRequest order, PaymentRequest paymentRequest) throws JsonProcessingException {
@@ -150,14 +161,11 @@ public class OrderService {
         }
 
         fulfillmentRequest.put("orderLines", orderLines);
-        System.out.println(new ObjectMapper().writeValueAsString(fulfillmentRequest));
 
         String url = "http://localhost:8081/fulfillment";
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, fulfillmentRequest, String.class);
-            System.out.println("Réponse brute : " + response.getBody());
             if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("Requête envoyée avec succès");
                 orderVrai.setStatus(OrderStatus.IN_PREPARATION);
                 return true;
             } else {
