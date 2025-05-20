@@ -1,4 +1,5 @@
 package com.example.demo.serviceImpl;
+import com.example.demo.exception.PaymentException;
 import com.example.demo.model.Payment;
 import com.example.demo.model.PaymentMethod;
 import com.example.demo.model.PaymentStatus;
@@ -29,6 +30,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public PaymentResponse processPayment(PaymentRequest paymentRequest) {
+        try {
         log.info("Traitement du paiement pour la commande: {}", paymentRequest.getOrderId());
 
         // Créer une nouvelle entité de paiement avec le builder
@@ -66,6 +68,9 @@ public class PaymentServiceImpl implements PaymentService {
 
         // Convertir en réponse
         return convertToResponse(payment, message);
+        } catch (Exception e) {
+            throw new PaymentException("Erreur lors du traitement du paiement: " + e.getMessage(), e);
+        }
     }
 
     // Le reste du code reste inchangé
@@ -74,7 +79,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.debug("Récupération du paiement avec ID: {}", paymentId);
         return paymentRepository.findById(paymentId)
                 .map(payment -> convertToResponse(payment, null))
-                .orElseThrow(() -> new RuntimeException("Paiement non trouvé avec l'ID: " + paymentId));
+                .orElseThrow(() -> new PaymentException("Paiement non trouvé avec l'ID: " + paymentId));
     }
 
     @Override
@@ -90,7 +95,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.debug("Récupération du dernier paiement pour la commande: {}", orderId);
         return paymentRepository.findTopByOrderIdOrderByCreatedAtDesc(orderId)
                 .map(payment -> convertToResponse(payment, null))
-                .orElseThrow(() -> new RuntimeException("Aucun paiement trouvé pour la commande: " + orderId));
+                .orElseThrow(() -> new PaymentException("Aucun paiement trouvé pour la commande: " + orderId));
     }
 
     @Override

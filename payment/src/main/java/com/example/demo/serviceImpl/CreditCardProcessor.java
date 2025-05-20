@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.Random;
 
 @Component
 @Slf4j
@@ -31,7 +30,6 @@ public class CreditCardProcessor implements PaymentProcessor {
             return false;
         }
 
-
         return true;
     }
 
@@ -52,7 +50,6 @@ public class CreditCardProcessor implements PaymentProcessor {
         if (paymentRequest.getAmount().compareTo(new BigDecimal("10000")) > 0) {
             return "Montant trop élevé (limite: 10000)";
         }
-
         return "Échec de traitement par la banque";
     }
 }
