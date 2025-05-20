@@ -34,7 +34,7 @@ public class ControllerArea {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Area> getAreaById(@PathVariable Long id) {
+    public ResponseEntity<Area> getAreaById(@PathVariable("id") Long id) {
         Area area = serviceArea.getAreaById(id);
         return new ResponseEntity<>(area, HttpStatus.OK);
     }
